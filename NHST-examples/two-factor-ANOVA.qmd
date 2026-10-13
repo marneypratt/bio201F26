@@ -1,0 +1,399 @@
+---
+title: "2 Factor ANOVA Example"
+format: 
+  html:
+    code-overflow: wrap
+    embed-resources: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Load necessary packages
+
+Run the code below at the start of the session to make sure all the necessary packages are loaded.
+
+It is recommended that you put all your code to load packages in one R chunk at the start. Run the chunk below by clicking the little green arrow at the top right of the code chunk.
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+suppressPackageStartupMessages(
+  library(tidyverse)) ## for readr, dplyr, ggplot2
+library(ggbeeswarm) ## for jittering points (you can remove this is you did not use a dotplot)
+#library(flextable, warn.conflicts = FALSE) ## for making formatted tables that can be pasted elsewhere
+library(dabestr, warn.conflicts = FALSE) ##for data analysis using Bootstrap-coupled estimation
+library(rstatix, warn.conflicts = FALSE) #pipe friendly framework for basic stats
+library(ggpubr, warn.conflicts = FALSE) #publication ready plots & QQ plots
+library(labelled) #for labeling variables better
+
+
+```
+
+## Example Grip Force Data
+
+The data used here are from a student project where maximum grip force was measured for 10 subjects. Half of the subjects were given caffeine to drink, and the other half were given a placebo which was not caffeinated but was otherwise the same as the caffeinated drink. The maximum grip force was measured before each subject consumed their drink, and was measured again 30 minutes after the subject consumed their drink.
+
+Thus, the dependent variable is maximum grip force (measured in Newtons), and there are two independent variables - (1) the time the grip force was measured (Before or After) and (2) the type of drink consumed (Caffeine or Placebo).
+
+Since there is one measurement variable (maximum grip force), and two nominal variables (time of measurement, type of drink), we can use a 2-Factor analysis to see if caffeine has a different effect on grip force than the placebo.
+
+Because the same subject was measured twice (Before and After), we have to take that into account. There are several ways this can be done. One option is to use a random blocking factor (another name for a repeated measure), which is the example shown here.
+
+The students who did this project predicted that caffeine would stimulate the sympathetic nervous system which could increase grip strength. Thus, they predicted a significant interaction between caffeine and the time grip was measured where the maximum grip would increase more after drinking caffeine than drinking the placebo.
+
+We will start by importing the data file. This file (called grip.csv) has 4 columns and 20 rows of data.
+
+The variables are:
+
+-   `time.measured` - this is the time the grip force was measured, Before or After drinking
+
+-   `drink.type` - this is the type of drink consumed, Caffeine or Placebo
+
+-   `subject` - this is the subject ID number from 1-10
+
+-   `maxGrip` - this is the maximum grip force measured in Newtons
+
+```{r}
+#| label: import data
+
+#Import data file 
+my.df <- read_csv("grip.csv",
+                  show_col_types = FALSE)
+                 
+#Change independent categorical variables to factors
+my.df$time.measured <- factor(my.df$time.measured, 
+                             levels = c("Before", "After"))
+my.df$drink.type <- factor(my.df$drink.type, 
+                          levels = c("Placebo", "Caffeine"))
+
+#add more useful labels for the columns
+my.df <- my.df |> 
+  labelled::set_variable_labels(
+    subject           = "Subject ID",
+    time.measured     = "Time of Measurement",
+    drink.type        = "Drink Type",
+    maxGrip           = "Maximum Grip Force (N)"
+  )
+
+#see https://www.pipinghotdata.com/posts/2022-09-13-the-case-for-variable-labels-in-r/ for more help with labeling data
+
+```
+
+Take a look at the dataset we just created by clicking on "my.df" in the Environment tab in the upper right RStudio window.
+
+Note that this dataset, which we named "my.df" (for "my data frame", which is just a generic way to name a data frame making it easier to use template or example code), includes a tidy data spreadsheet. There are four columns and 20 observations in each. Each column has a column name and a more descriptive label that we added using the `set_variable_labels` function from the `labelled` package.
+
+Next we will relabel some of our variables so they can easily be used with the template code and avoid rewriting the column names a lot of times.
+
+
+```{r}
+#| label: define variables
+#Define your variables and redefine your dataframe name here to avoid having to type them a lot
+
+#define the continuous variable of choice 
+cont.var <- "maxGrip" 
+
+#define the categorical variable that is your within-subjects factor 
+factor.var1 <- "time.measured"
+predictor1 <- "time.measured"
+
+#define the categorical variable that is your between-subjects factor 
+factor.var2 <- "drink.type"
+predictor2 <- "drink.type"
+
+#define the name of the column that contains your subject identifiers
+subject.ID <- "subject"
+
+#define the within subjects formula using variable names above
+    response <- cont.var
+    formula_string1 <- paste0(response, " ~ ", predictor1)
+    formula_object1 <- as.formula(formula_string1)
+    
+#define the between subjects formula using variable names above
+    response <- cont.var
+    formula_string2 <- paste0(response, " ~ ", predictor2)
+    formula_object2 <- as.formula(formula_string2)
+
+```
+
+## Data Exploration
+
+### Descriptive Statistics
+
+First, let's get the full descriptive statistics by running the next code chunk.
+
+Note that we will use the 2 factors (time.measured, drink.type) in the `group_by()` function to see the descriptive statistics for the interaction of these two factors.
+
+```{r}
+#| label: descriptive stats
+
+# the code below will calculate descriptive statistics for a variable of interest grouped by another variable
+
+#set the variable you want to summarize
+cont.var <- "maxGrip" 
+
+df.sum <- my.df  |>  
+  # remove missing values from continuous variables
+  filter(!is.na(.data[[cont.var]])) |> 
+  
+  # Group the data by your 2 factors
+  group_by(.data[[factor.var1]], .data[[factor.var2]]) |> 
+  
+  # calculate the descriptive stats
+  summarize(mean = mean(.data[[cont.var]]), 
+            median = median(.data[[cont.var]]), 
+            SD = sd(.data[[cont.var]]), 
+            IQR = IQR(.data[[cont.var]]), 
+            min = min(.data[[cont.var]]),
+            max = max(.data[[cont.var]]),
+            N = n())
+
+df.sum
+
+
+
+```
+
+How should we round these variables? Recall that you can use the SD as the indicator of how much average variability there is in your data. For this class, please round the SD to 2 significant digits based on recommendations in [Cole et al. (2015)](https://www-ncbi-nlm-nih-gov.libproxy.smith.edu/pmc/articles/PMC4483789/). Then round all the other values to the same decimal place as the rounded SD.
+
+```{r}
+#| label: rounding the SD
+
+
+#calculate rounded SD
+my.df |> 
+  
+  # replace the blank with the categorical variable(s)
+  group_by(.data[[factor.var1]], .data[[factor.var2]]) |> 
+  
+  # remove missing values 
+  filter(!is.na(.data[[cont.var]])) |> 
+  
+  #calculate the rounded values
+  summarise(SD = signif(sd(.data[[cont.var]]), digits=2))
+
+```
+
+
+In the case above, we should round the SD to the tenths or ones place to get it rounded to 2 significant digits (there is more variation in the After measurements). Thus, we will round the values to the tenths place for the Before groups and to the ones place for the After groups.
+
+
+### QQ Plots to Assess Normality
+
+Use a QQ plot to see if each continuous variable is normally distributed. Since we only have one continuous dependent variable in this example, that is the only variable we need to assess the distribution for.
+
+The `color` and `facet.by` functions splits the plots up by any factors you have. If you have no factors, then delete one or both of those lines and the comma from the above line.
+
+You only need to replace the BLANKS (indicated by underscores) in the code below based on the instructions in the comments
+
+```{r}
+#| label: Dependent variable QQ plots 
+
+#make a QQ plot for each dependent variable that is continuous
+ggpubr::ggqqplot(
+  data = my.df,               #put the data frame name here 
+  x = {{ cont.var }},                  #put the continuous variable name here
+  color = {{ factor.var2 }},       #put one factor here (remove if no factors)
+  facet.by = {{ factor.var1 }}  #put another factor here (remove if no factors)
+  )  
+
+```
+
+If the points are fairly close to the line, you can assume that the data have a reasonably normal distribution.
+
+If the points do not fit close to the line at all, you can try a transformation (such as taking the logarithm) to see if that gets the points to fit closer to the line. Just note that you can't take the log of zero, so if you have any zero values, you can add one before taking the log (or use the function `log1p`)
+
+Here we can see that the points fit the line reasonably well, so we can assume it is close enough to a normal distribution. Do note that the variability (shown as the shaded area in the QQ plots but also in the SD and IDR of the descriptive statistics) is much higher in the "After" values than in the "Before" values.
+
+```{r}
+#| label: identify outliers 
+
+#test for outliers
+my.df  |> 
+  group_by(.data[[factor.var1]], .data[[factor.var2]] )  |> 
+  rstatix::identify_outliers({{ cont.var }}) 
+
+```
+
+If an outlier is extreme, you may decide to run the analysis with and without the outlier(s) to see the impact on the results. Since this outlier is not extreme, we will leave it in but it is good to note.
+
+
+## Null Hypothesis Significance Testing
+
+A traditional framework that has been used for a long time to do statistical inference is called "Null Hypothesis Significance Testing" or NHST (see [Pernet 2017](https://f1000research.com/articles/4-621/v5) for an overview).
+
+We have 2 factors and measured Before and After drinking on the same subjects. Thus, we have a within subjects factor (Time of Measurements, with Before and After levels) and a between subjects factor (Drink Type, with Placebo and Control levels). Since we are mixing within and between factors, we will complete what is sometimes called a 2-way mixed analysis of variance with repeated measures (2-way mixed ANOVA).
+
+One of the first thing to do when completing an ANOVA (or similar tests) is to test the assumptions of the model. (the code below was based on the [Two-way mixed ANOVA](https://www.datanovia.com/en/lessons/mixed-anova-in-r/#google_vignette) and [Anova Test](https://rpkgs.datanovia.com/rstatix/reference/anova_test.html) from Datanovia).
+
+```{r}
+#| label: test assumptions
+
+#Test to see if each group has a normal distributed
+#p-value should be greater than 0.05 if normal
+my.df  |> 
+  group_by(.data[[factor.var1]], .data[[factor.var2]])  |> 
+  rstatix::shapiro_test(cont.var)
+
+
+#make a QQ plot for each dependent variable that is continuous
+ggpubr::ggqqplot(
+  data = my.df,               #put the data frame name here 
+  x = {{ cont.var }},                  #put the continuous variable name here
+  color = {{ factor.var2 }},       #put one factor here (remove if no factors)
+  facet.by = {{ factor.var1 }}  #put another factor here (remove if no factors)
+  )  
+
+
+#test for outliers
+my.df  |> 
+  group_by(.data[[factor.var1]], .data[[factor.var2]] )  |> 
+  rstatix::identify_outliers({{ cont.var }}) 
+
+#test for homogeneity of variance
+##p-value should be greater than 0.05 if variance is homogeneous
+my.df |> 
+  group_by(.data[[factor.var1]]) |> 
+  levene_test(formula_object2)
+
+
+
+```
+
+The first results window to the left above, shows the results of a Shapiro-Wilks test of normality (using the `rstatix` package). The p-value for each group was greater than 0.05, which indicates they are each not significantly different from the null-hypothesis (the null here is that it is a normal distribution). This is statistics speak to say that they are close enough to a normal distribution for our purposes.
+
+The next results window above shows a Q-Q plot (quantile-quantile plot) for each group comparing to a normal distribution in a graphical manner (see this [Complete Guide: How to Interpret Q-Q Plots](https://www.statology.org/qq-plot-interpretation/) if you want to learn more). Because the points are mostly close to the line and don't stray much outside of the grey shaded area, this also indicates that the data are pretty normally distributed.
+
+The second to last results window above shows how many rows contain outliers. In this case, there was one outlier (the value before drinking decaf coffee for subject number 6), but it was not an "extreme" outlier.
+
+The last results window shows tests whether the variance is similar among groups. In this case, the p-values are all above 0.05, so that indicates the variance is homogeneous within each time point (Before or After). 
+
+Since these data fit the assumptions of ANOVA well enough, we will now complete the 2-way mixed ANOVA and create a graph of the results.
+
+
+```{r}
+#| label: two-way mixed ANOVA
+
+#avoids scientific notation
+options(scipen = 99)
+
+# Perform 2-way mixed ANOVA with the rstatix package
+mixed_anova <- rstatix::anova_test(
+    data = my.df,   #dataframe 
+    dv = {{cont.var}},   #dependent variable
+    wid = {{subject.ID}},  #subjects column
+    between = {{factor.var2}},    #between-subjects factor variable
+    within = {{factor.var1}})  #within-subjects factor variable 
+
+# Print the results as a dataframe
+mixed_anova.table <- 
+  as.data.frame(get_anova_table(mixed_anova))
+mixed_anova.table
+
+#save the results as a csv file
+write_csv(mixed_anova.table, "results/mixed_anova.table.csv")
+
+# We are comparing to an F-distribution (F-test) here 
+# DFn indicates the degrees of freedom in the numerator 
+# DFd indicates the degrees of freedom in the denomenator 
+# F is the F-statistic value
+# p specifies the p-value
+# ges is the generalized effect size 
+
+```
+
+The results above give the overall results of the 2-way mixed ANOVA test. The first two rows give the main effect results of each factor, and the last row gives the interaction effect. It is important to interpret the interaction effect first. Here, we see that the interaction effect was not significant (p=0.20). The main effect of Drink Type was also not significant (p=0.28), but the main effect of Time of Measurement did have a significant effect (p=0.003). 
+
+Since there are only two levels within the Time of Measurement factor (Before vs After), we can already say that these are significantly different. But I have included the post-hoc tests (which just means the tests you do after the main test) that is needed to see which groups are different from each other within a main effect. See the Datanovia page on  [Mixed ANOVA in R](https://www.datanovia.com/en/lessons/mixed-anova-in-r/) for more about the post-hoc tests for the two-way example (Just note that I recommend a dot plot rather than a box plot for the results). Below is the code for a non-significant two-way interaction, where we are only comparing levels for the significant main effect of Time of Measurement.
+
+```{r}
+#| label: two-way mixed ANOVA post-hoc
+
+# Pairwise comparisons among levels for the within subjects factor 
+pwc <- my.df  |> 
+  pairwise_t_test(formula_object1, 
+                  paired = TRUE,
+                  p.adjust.method = "bonferroni")
+pwc
+
+```
+Note that the p-value for this pairwise t-test comparing Before and After is the same as the p-value for the main effect of time.measured in the 2-way mixed ANOVA. This is because there are only two levels, so the overall effect is the same as the one pairwise test.
+
+Like we did with the estimation statistics framework, it is useful to compare the baseline (in this case "Before") values between the two treatment groups (Placebo vs Caffeine) to make sure that there wasn't anything different between the two groups of subjects before they were subjected to the treatment. We will use the `rstatix` package function t_test to do an unpaired t-test to compare the Before values between the two treatment groups (see [How To Do Two-Sample T-test in R](https://www.datanovia.com/en/lessons/how-to-do-a-t-test-in-r-calculation-and-reporting/how-to-do-two-sample-t-test-in-r/)).
+
+```{r}
+#| label: unpaired t-test of baselines
+
+#computes the unpaired t-test
+baseline.ttest <- my.df  |>  
+  filter(.data[[factor.var1]] == "Before") |> 
+  t_test(formula_object2,
+         detailed = TRUE)  |> 
+  add_significance()
+baseline.ttest 
+
+
+#computes the effect size using Cohen's d
+my.df  |>  
+  filter(.data[[factor.var1]] == "Before") |> 
+  rstatix::cohens_d(formula_object2, var.equal = TRUE)
+  
+```
+The p-value (0.91) is very high and the negligible effect size (Cohen's d = -0.07) indicate that the maximum grip force "Before" consuming either drink was not significantly different between the Placebo and Caffeine groups. Since we don't want any bias introduced to our groups, it is good that the groups were not different for the baseline measurement.
+
+Lastly, we can graph the data as a dot plot with lines connecting the subjects
+
+```{r}
+#| label: two-factor plot
+
+#create 2 factor plot 
+factor2.plot <- ggplot(
+  data = my.df, 
+  aes(
+    y = maxGrip, 
+    x = time.measured,
+    group = `subject`)) +
+  geom_point(size = 3, shape = 21, fill = "steelblue", alpha = 0.5) +
+  geom_line() + 
+  
+  ###this bit of code adds the horizontal bar - keep as median or change to mean
+  stat_summary(fun = median, fun.min = median, fun.max = median, 
+      geom = "crossbar", width = 0.3, linewidth = 0.6,
+      aes(group = 'time.measured' )) +
+  
+  xlab("Time of Measurement") +
+  ylab("Maximum Grip Force (N)") +
+  coord_cartesian(ylim = c(0, 120)) +
+  theme_classic(base_size=18) +
+  facet_grid(~drink.type)
+factor2.plot
+
+```
+
+
+The graph shows the data points connected by lines for each subject as well as the median value for each treatment given as the thick horizontal bar. 
+
+
+
+## Save your graphs
+
+To save your graph with the `ggsave()` function, you need to name the resulting file with surrounding " ", and indicate the size via height, width, and units. Don't forget to save the graph with a dpi call at 300-500 to make it nice and crisp! Look at the `ggsave()` help file for more information and options.
+
+Note that the code below will save the graph and put it into the "results" folder 
+
+```{r}
+#| label: Save your graph
+#| eval: false
+
+# save the graphs
+# it is usually best to use .png or .jpg file types
+
+ggsave(factor2.plot, filename="results/factor2.plot.png",  
+       height = 5, width = 8, units = "in", 
+       dpi = 300)
+
+```
+
+

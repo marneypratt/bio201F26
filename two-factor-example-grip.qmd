@@ -1,0 +1,684 @@
+---
+title: "2 Factor Analysis Example"
+format: 
+  html:
+    code-overflow: wrap
+    embed-resources: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Load necessary packages
+
+Run the code below at the start of the session to make sure all the necessary packages are loaded.
+
+It is recommended that you put all your code to load packages in one R chunk at the start. Run the chunk below by clicking the little green arrow at the top right of the code chunk.
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+suppressPackageStartupMessages(
+  library(tidyverse)) ## for readr, dplyr, ggplot2
+library(ggbeeswarm) ## for jittering points (you can remove this is you did not use a dotplot)
+#library(flextable, warn.conflicts = FALSE) ## for making formatted tables that can be pasted elsewhere
+library(rstatix, warn.conflicts = FALSE) #pipe friendly framework for basic stats
+library(ggpubr, warn.conflicts = FALSE) #publication ready plots & QQ plots
+library(labelled) #for labeling variables better
+
+
+```
+
+## Example Grip Force Data
+
+The data used here are from a student project where maximum grip force was measured for 10 subjects. Half of the subjects were given caffeine to drink, and the other half were given a placebo which was not caffeinated but was otherwise the same as the caffeinated drink. The maximum grip force was measured before each subject consumed their drink, and was measured again 30 minutes after the subject consumed their drink.
+
+Thus, the dependent variable is maximum grip force (measured in Newtons), and there are two independent variables - (1) the time the grip force was measured (Before or After) and (2) the type of drink consumed (Caffeine or Placebo).
+
+Since there is one measurement variable (maximum grip force), and two nominal variables (time of measurement, type of drink), we can use a 2-Factor analysis to see if caffeine has a different effect on grip force than the placebo.
+
+Because the same subject was measured twice (Before and After), we have to take that into account. There are several ways this can be done. One option is to use a random blocking factor (another name for a repeated measure), which is the example shown here.
+
+The students who did this project predicted that caffeine would stimulate the sympathetic nervous system which could increase grip strength. Thus, they predicted a significant interaction between caffeine and the time grip was measured where the maximum grip would increase more after drinking caffeine than drinking the placebo.
+
+We will start by importing the data file. This file (called grip.csv) has 4 columns and 20 rows of data.
+
+The variables are:
+
+-   `time.measured` - this is the time the grip force was measured, Before or After drinking
+
+-   `drink.type` - this is the type of drink consumed, Caffeine or Placebo
+
+-   `subject` - this is the subject ID number from 1-10
+
+-   `maxGrip` - this is the maximum grip force measured in Newtons
+
+```{r}
+#| label: import data
+
+#Import data file 
+my.df <- read_csv("data/example-data/grip.csv",
+                  show_col_types = FALSE)
+                 
+#Change independent categorical variables to factors
+my.df$time.measured <- factor(my.df$time.measured, 
+                             levels = c("Before", "After"))
+my.df$drink.type <- factor(my.df$drink.type, 
+                          levels = c("Placebo", "Caffeine"))
+
+#add more useful labels for the columns
+my.df <- my.df |> 
+  labelled::set_variable_labels(
+    subject           = "Subject ID",
+    time.measured     = "Time of Measurement",
+    drink.type        = "Drink Type",
+    maxGrip           = "Maximum Grip Force (N)"
+  )
+
+#see https://www.pipinghotdata.com/posts/2022-09-13-the-case-for-variable-labels-in-r/ for more help with labeling data
+
+```
+
+Take a look at the dataset we just created by clicking on "my.df" in the Environment tab in the upper right RStudio window.
+
+Note that this dataset, which we named "my.df" (for "my data frame", which is just a generic way to name a data frame making it easier to use template or example code), includes a tidy data spreadsheet. There are four columns and 20 observations in each. Each column has a column name and a more descriptive label that we added using the `set_variable_labels` function from the `labelled` package.
+
+Next we will relabel some of our variables so they can easily be used with the template code and avoid rewriting the column names a lot of times.
+
+
+```{r}
+#| label: define variables
+#Define your variables and redefine your dataframe name here to avoid having to type them a lot
+
+#define the continuous variable of choice 
+cont.var <- "maxGrip" 
+
+#define the categorical variable that is your within-subjects factor 
+w.factor.var <- "time.measured"
+
+#define the categorical variable that is your between-subjects factor 
+b.factor.var <- "drink.type"
+
+#define the name of the column that contains your subject identifiers
+subject.ID <- "subject"
+
+
+
+```
+
+
+## Data Exploration
+
+### Descriptive Statistics
+
+First, let's get the full descriptive statistics by running the next code chunk.
+
+Note that we will use the 2 factors in the `group_by()` function to see the descriptive statistics for the interaction of these two factors.
+
+```{r}
+#| label: descriptive stats
+
+# the code below will calculate descriptive statistics for a variable of interest grouped by another variable
+
+
+# the code below will calculate descriptive statistics for a variable of interest grouped by another variable
+
+df.sum <- my.df  |>  
+  # remove missing values from continuous variables
+  filter(!is.na(.data[[cont.var]])) |> 
+  
+  # Group the data by your 2 factors
+  group_by(.data[[w.factor.var]], .data[[b.factor.var]]) |> 
+  
+  # calculate the descriptive stats
+  summarize(mean = mean(.data[[cont.var]]), 
+            median = median(.data[[cont.var]]), 
+            SD = sd(.data[[cont.var]]), 
+            IQR = IQR(.data[[cont.var]]), 
+            min = min(.data[[cont.var]]),
+            max = max(.data[[cont.var]]),
+            N = n())
+
+df.sum
+
+
+
+```
+
+How should we round these variables? Recall that you can use the SD as the indicator of how much average variability there is in your data. For this class, please round the SD to 2 significant digits based on recommendations in [Cole et al. (2015)](https://www-ncbi-nlm-nih-gov.libproxy.smith.edu/pmc/articles/PMC4483789/). Then round all the other values to the same decimal place as the rounded SD.
+
+```{r}
+#| label: rounding the SD
+
+
+#calculate rounded SD
+my.df |> 
+  
+  # replace the blank with the categorical variable(s)
+  group_by(.data[[w.factor.var]], .data[[b.factor.var]]) |> 
+  
+  # remove missing values 
+  filter(!is.na(.data[[cont.var]])) |> 
+  
+  #calculate the rounded values
+  summarise(SD = signif(sd(.data[[cont.var]]), digits=2))
+
+```
+
+
+In the case above, we should round the SD to the tenths or ones place to get it rounded to 2 significant digits (there is more variation in the After measurements). Thus, we should round the values to the tenths place for the Before groups and to the ones place for the After groups. But to simplify, we will round them all to the tenths place for this example. We can always round the After values to the ones place later.
+
+```{r}
+#| label: rounded descriptive stats
+
+# Use the following for digits in the `round` function
+# 
+#    rounding to the tens place use digits=-1
+#    rounding to the ones place use digits=0
+#    rounding to the tenths place use digits=1
+#    rounding to the hundredths place use digits=2
+
+#set the number of digits to round to based on the rules above (this blank should be just a number)
+round.digit <- 1
+
+
+# replace the blank with the cleaned data frame name 
+my.df  |>  
+  # remove missing values from continuous variables
+  filter(!is.na(.data[[cont.var]])) |> 
+  
+  #this groups by a defined set of between and within subjects factors
+  #remove factors as needed
+  group_by(.data[[w.factor.var]], .data[[b.factor.var]] )  |> 
+  
+  # calculate the descriptive stats
+  # do not place anything in the empty parentheses in the n() 
+  summarize(Sample.size = n(),
+            Min = round(min(.data[[cont.var]]), digits=round.digit),
+            Q1 = round(quantile(.data[[cont.var]], .25), digits=round.digit),
+            Median = round(median(.data[[cont.var]]), digits=round.digit),
+            Q3 = round(quantile(.data[[cont.var]], .75), digits=round.digit),
+            Max = round(max(.data[[cont.var]]), digits=round.digit),
+            Mean = round(mean(.data[[cont.var]]), digits=round.digit),              
+            SD = signif(sd(.data[[cont.var]]), digits=2))
+
+```
+
+
+
+### QQ Plots to Assess Normality
+
+Use a QQ plot to see if each continuous variable is normally distributed. Since we only have one continuous dependent variable in this example, that is the only variable we need to assess the distribution for.
+
+The `color` and `facet.by` functions splits the plots up by any factors you have. If you have no factors, then delete one or both of those lines and the comma from the above line.
+
+
+```{r}
+#| label: Dependent variable QQ plots 
+
+#make a QQ plot for each dependent variable that is continuous
+ggpubr::ggqqplot(
+  data = my.df,               #put the data frame name here 
+  x = {{ cont.var }},                  #put the continuous variable name here
+  color = {{ b.factor.var }},       #put the between subjects factor here (remove if no factors)
+  facet.by = {{ w.factor.var }}  #put the within subjects factors here (remove if no factors)
+  )  
+
+```
+
+If the points are fairly close to the line, you can assume that the data have a reasonably normal distribution.
+
+If the points do not fit close to the line at all, you can try a transformation (such as taking the logarithm) to see if that gets the points to fit closer to the line. Just note that you can't take the log of zero, so if you have any zero values, you can add one before taking the log (or use the function `log1p`)
+
+Here we can see that the points fit the line reasonably well, so we can assume it is close enough to a normal distribution. Do note that the variability (shown as the shaded area in the QQ plots but also in the SD and IDR of the descriptive statistics) is much higher in the "After" values than in the "Before" values.
+
+Let's look for outliers next.
+
+```{r}
+#| label: identify outliers 
+
+#test for outliers
+my.df  |> 
+  group_by(.data[[w.factor.var]], .data[[b.factor.var]] )  |> 
+  rstatix::identify_outliers({{ cont.var }}) 
+
+```
+
+If an outlier is extreme, you may decide to run the analysis with and without the outlier(s) to see the impact on the results. Since this outlier is not extreme, we will leave it in but it is good to note.
+
+```{r}
+#| label: remove outliers 
+
+#if you want to remove an outlier
+#fill in the blank with the number of the subject you want to remove
+#remove the hashtags in front of the code below
+
+# my.df2 <- my.df |> 
+#   dplyr::filter(subject != ___)
+
+
+```
+
+If you want to report any of the descriptive statistics, it really is not necessary to report all of them. Since this dataset is reasonably normal, we can use the mean and SD to summarize the data.
+
+```{r}
+#| label: formatted table
+
+#see https://davidgohel.github.io/flextable/ for more info & formatting options
+
+#calculate descriptive stats
+#replace the blank below with the name of the dataframe
+df.sum <- my.df |> 
+  
+  # replace the blank with the categorical variable(s)
+  group_by(.data[[w.factor.var]], .data[[b.factor.var]] )  |>  
+  
+  # remove missing values 
+  filter(!is.na(.data[[cont.var]])) |> 
+  
+  # calculate the descriptive stats
+  # replace the blanks with the number of digits 
+  # to the right of the decimal place based on the rounded SD
+  # the SD is rounded to 2 significant digits using signif  
+  # do not place anything in the empty parentheses in the n() 
+  # N represents the sample size within each group
+  summarise(Mean = round(mean(.data[[cont.var]]), digits=1), 
+            SD = signif(sd(.data[[cont.var]]), digits=2),
+            N = n())
+
+library(flextable) #helps format a nicer table
+
+#create the formatted table
+ft <- flextable(df.sum,
+                cwidth = 0.75) |>  #can vary cell width as needed
+  
+  #bold the headings
+  bold(part = "header") |> 
+  
+  #center columns
+  align(align = "center", part = "all" )
+
+#print the table
+#right click on the table, choose select all, 
+#choose copy, then paste in your document
+#finish formatting as needed in your document
+ft
+
+```
+
+
+
+
+## Inferential Statistics
+
+Next, we want to perform some inferential statistical tests to see if the dependent variable was impacted by the two independent variables. Since this experimental design used the same subjects, we need to take that into consideration using a repeated measures type of test.
+
+### Graph the 2-Factor Plot
+
+First we will graph all the data on a 2-factor plot
+
+```{r}
+#| label: two-factor plot
+
+#create 2 factor plot 
+factor2.plot <- ggplot(
+  data = my.df, 
+  aes(
+    y = maxGrip, 
+    x = time.measured,
+    group = `subject`)) +
+  geom_point(size = 3, color = "orange", alpha = 0.8) +
+  geom_line(color = "grey86") + 
+  
+  ###this bit of code adds the horizontal bar - use median or mean as needed
+  stat_summary(fun = mean, fun.min = mean, fun.max = mean, 
+      geom = "crossbar", width = 0.3, linewidth = 0.6,
+      aes(group = 'time.measured' )) +
+  
+  xlab("Time of Measurement") +
+  ylab("Maximum Grip Force (N)") +
+  coord_cartesian(ylim = c(0, 120)) +
+  theme_classic(base_size=18) +
+  facet_grid(~drink.type)
+factor2.plot
+
+```
+The graph shows the data points connected by lines for each subject as well as the mean value for each treatment given as the thick horizontal bar. 
+
+### Compare the baseline between treatment groups
+
+For the first inferential test, we will compare the baseline (Before) values between the two treatments (Caffeine vs Placebo) to make sure that we did a good job of random sampling. Our expectation is that there should not be a difference between the treatments for the baseline values before they experienced the treatments.
+
+```{r}
+#| label: unpaired comparison of baselines
+
+
+#computes the effect size using Cohen's d
+
+my.df.base <- my.df  |>  
+  filter(time.measured == "Before") 
+
+baseline.effectSize.results <- 
+  rstatix::cohens_d(
+           data = my.df.base,
+           maxGrip ~ drink.type, 
+           paired = FALSE,       #TRUE for within-subjects, FALSE for between-subjects
+           var.equal = TRUE,   #TRUE for equal variance, FALSE for unequal variance
+           hedges.correction = FALSE,
+           ci = TRUE,
+           conf.level = 0.95,
+           ci.type = "bca",
+           nboot = 1000)
+baseline.effectSize.results
+  
+```
+The negligible effect size (Cohen's d = -0.071) with 95% CI that includes zero (95% CI: -1.7 to 1.6) indicates that the maximum grip force "Before" consuming either drink was not significantly different between the Placebo and Caffeine groups.
+
+### Between Subjects Difference Plot
+
+Next, we will graph the difference in the between subjects factor which is Time of Measurement (After - Before) in this example
+
+```{r}
+#| label: difference plot
+
+
+#first we need to change the format of the data from long to wide
+#this way, we will have one row for each subject and can take a difference
+#between the after and before values
+my.df.wide  <- my.df |> 
+  pivot_wider(
+    names_from = time.measured,
+    names_glue = "{time.measured}.{.value}",
+    values_from = maxGrip
+  )
+
+#next, take the difference between the values for each subject
+my.df.diff <- my.df.wide |> 
+  mutate(change.maxGrip = After.maxGrip - Before.maxGrip)
+  
+
+
+#create difference plot 
+difference.plot <- ggplot(
+  data = my.df.diff, 
+  aes(
+    y = change.maxGrip, 
+    x = drink.type)) +
+  geom_point(size = 3, color = "orange", alpha = 0.8) +
+
+  ###this bit of code adds the horizontal bar - use median or mean as needed
+  stat_summary(fun = mean, fun.min = mean, fun.max = mean, 
+      geom = "crossbar", width = 0.2, linewidth = 0.6,
+      aes(group = 'time.measured' )) +
+  
+  xlab("Treatment") +
+  ylab("Difference in Maximum Grip Force (N)") +
+  theme_classic(base_size=16) 
+difference.plot
+
+
+
+```
+
+This graph shows the difference in maximum grip force after - before drinking for each subject separated by treatment (the type of drink) with each point representing the difference for a subject and the horizontal bar is the mean for each treatment.
+
+
+### Effect Size Comparing Between Subjects
+
+```{r}
+#| label: between subjects effect size
+
+#computes the effect size using Cohen's d for Welch test
+btw.effectSize.results <- 
+  rstatix::cohens_d(
+    data = my.df.diff,           #put the dataframe name here
+    change.maxGrip ~ drink.type,      #continuous variable ~ factor 
+    paired = FALSE,       #TRUE for within-subjects, FALSE for between-subjects
+    var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
+    hedges.correction = FALSE,
+    ci = TRUE,
+    conf.level = 0.95,
+    ci.type = "bca",
+    nboot = 1000)
+btw.effectSize.results
+
+
+```
+
+While the effect size is large, the 95% CI includes zero so it is not significantly different from zero. We can graph this and look at it more visually (which is more helpful for presentation slides)
+
+```{r}
+#| label: effect size graph
+
+#I reversed the sign of the effect size and 95% CI to make it positive (caffeine - placebo)
+effect.plot <- btw.effectSize.results  |>    
+  ggplot(aes(
+    x = .y., 
+    y = -effsize)) +
+  
+  geom_pointrange(aes(ymin = -conf.low, ymax = -conf.high),
+                  size = 1, # Adjust point size
+                  linewidth = 0.8, # Adjust line thickness
+                  color = "steelblue") + # Set color
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
+  xlab("Caffeine - Placebo") +
+  ylab("Standardized Effect Size") +
+  #additional formatting
+  theme_classic(base_size = 14)  +  #sets the font size
+  theme(axis.text.x = element_blank()) +
+  theme(legend.position = "none")   #controls legend/key
+
+effect.plot
+
+```
+
+
+### Main Effects
+
+Since the interaction of type of drink and time of measurement is not significant, we can look at the main effects. 
+
+Without splitting by type of drink, let's look at the main effect of time of measurement.
+
+```{r}
+#| label: main plot time
+
+#create 2 factor plot 
+main.time.plot <- ggplot(
+  data = my.df, 
+  aes(
+    y = maxGrip, 
+    x = time.measured,
+    group = `subject`)) +
+  geom_point(aes(color = drink.type, shape = drink.type), 
+              size = 3, alpha = 1) +
+  geom_line(color = "grey86") + 
+  
+  ###this bit of code adds the horizontal bar - use median or mean as needed
+  stat_summary(fun = mean, fun.min = mean, fun.max = mean, 
+      geom = "crossbar", width = 0.2, linewidth = 0.6,
+      aes(group = 'time.measured' )) +
+  
+  xlab("Time of Measurement") +
+  ylab("Maximum Grip Force (N)") +
+  coord_cartesian(ylim = c(0, 120)) +
+  theme_classic(base_size=14)  +
+  labs(shape = "Drink Type", color = "Drink Type" ) +
+  theme(legend.position = "top")
+  
+  main.time.plot <- ggpubr::ggpar(main.time.plot, palette = c("#F5F11A", "#7F68F0"))
+
+  
+main.time.plot
+
+# save the graph! (.png or .jpg file types are recommended)
+ggsave(filename = "results/main.time.plot.png",  
+       plot = main.time.plot,   #put the object name of your plot here
+       height = 5, width = 3.75, units = "in", 
+       dpi = 300)
+
+
+```
+
+```{r}
+#| label: time main effect size
+
+#computes the effect size using Cohen's d for Welch test
+time.effectSize.results <- 
+  rstatix::cohens_d(
+    data = my.df,           #put the dataframe name here
+    maxGrip ~ time.measured,      #continuous variable ~ factor 
+    paired = TRUE,       #TRUE for within-subjects, FALSE for between-subjects
+    var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
+    hedges.correction = TRUE,
+    ci = TRUE,
+    conf.level = 0.95,
+    ci.type = "bca",
+    nboot = 1000)
+time.effectSize.results
+
+
+#I reversed the sign of the effect size and 95% CI to make it positive (caffeine - placebo)
+time.effect.plot <- time.effectSize.results  |>    
+  ggplot(aes(
+    x = .y., 
+    y = -effsize)) +
+  
+  geom_pointrange(aes(ymin = -conf.low, ymax = -conf.high),
+                  size = 1, # Adjust point size
+                  linewidth = 0.8, # Adjust line thickness
+                  color = "steelblue") + # Set color
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
+  xlab("After - Before") +
+  ylab("Standardized Effect Size") +
+  #additional formatting
+  theme_classic(base_size = 14)  +  #sets the font size
+  theme(axis.text.x = element_blank()) +
+  theme(legend.position = "none")   #controls legend/key
+
+time.effect.plot
+
+
+
+```
+
+
+```{r}
+#| label: main plot drink
+
+#create 2 factor plot 
+main.drink.plot <- ggplot(
+  data = my.df, 
+  aes(
+    y = maxGrip, 
+    x = drink.type)) +
+  geom_point(aes(color = time.measured, shape = time.measured), 
+              size = 3, alpha = 1) +
+
+  ###this bit of code adds the horizontal bar - use median or mean as needed
+  stat_summary(fun = mean, fun.min = mean, fun.max = mean, 
+      geom = "crossbar", width = 0.2, linewidth = 0.6,
+      aes(group = 'drink.type' )) +
+  
+  xlab("Drink Type") +
+  ylab("Maximum Grip Force (N)") +
+  coord_cartesian(ylim = c(0, 120)) +
+  theme_classic(base_size=16)  +
+  labs(shape = "Test Period", color = "Test Period" ) +
+  theme(legend.position = "top")
+  
+  main.drink.plot <- ggpubr::ggpar(main.drink.plot, palette = c("#F5F11A", "#7F68F0"))
+
+  
+main.drink.plot
+
+
+```
+
+```{r}
+#| label: drink main effect size
+
+#computes the effect size using Cohen's d for Welch test
+drink.effectSize.results <- 
+  rstatix::cohens_d(
+    data = my.df,           #put the dataframe name here
+    maxGrip ~ drink.type,      #continuous variable ~ factor 
+    paired = TRUE,       #TRUE for within-subjects, FALSE for between-subjects
+    var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
+    hedges.correction = TRUE,
+    ci = TRUE,
+    conf.level = 0.95,
+    ci.type = "bca",
+    nboot = 1000)
+drink.effectSize.results
+
+
+#I reversed the sign of the effect size and 95% CI to make it positive (caffeine - placebo)
+drink.effect.plot <- drink.effectSize.results  |>    
+  ggplot(aes(
+    x = .y., 
+    y = -effsize)) +
+  
+  geom_pointrange(aes(ymin = -conf.low, ymax = -conf.high),
+                  size = 1, # Adjust point size
+                  linewidth = 0.8, # Adjust line thickness
+                  color = "steelblue") + # Set color
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
+  xlab("Caffeine - Placebo") +
+  ylab("Standardized Effect Size") +
+  #additional formatting
+  theme_classic(base_size = 14)  +  #sets the font size
+  theme(axis.text.x = element_blank()) +
+  theme(legend.position = "none")   #controls legend/key
+
+drink.effect.plot
+
+```
+
+
+## Save your graphs
+
+To save your graph with the `ggsave()` function, you need to name the resulting file with surrounding " ", and indicate the size via height, width, and units. Don't forget to save the graph with a dpi call at 300-500 to make it nice and crisp! Look at the `ggsave()` help file for more information and options.
+
+Note that the code below will save the graph and put it into the "results" folder 
+
+```{r}
+#| label: Save your graphs
+#| eval: false
+
+# save the graphs
+# it is usually best to use .png or .jpg file types
+
+
+ggsave(factor2.plot, filename="results/factor2.plot.png",  
+       height = 5, width = 8, units = "in", 
+       dpi = 300)
+
+ggsave(difference.plot, filename="results/difference.plot.png",  
+       height = 5, width = 4, units = "in", 
+       dpi = 300)
+
+ggsave(effect.plot, filename="results/effect.plot.png",  
+       height = 5, width = 3, units = "in", 
+       dpi = 300)
+
+ggsave(main.time.plot, filename="results/main.time.plot.png",  
+       height = 5, width = 5, units = "in", 
+       dpi = 300)
+
+ggsave(time.effect.plot, filename="results/time.effect.plot.png",  
+       height = 5, width = 3, units = "in", 
+       dpi = 300)
+
+
+ggsave(main.drink.plot, filename="results/main.drink.plot.png",  
+       height = 5, width = 5, units = "in", 
+       dpi = 300)
+
+ggsave(drink.effect.plot, filename="results/drink.effect.plot.png",  
+       height = 5, width = 3, units = "in", 
+       dpi = 300)
+
+```
+
+

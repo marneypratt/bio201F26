@@ -1,0 +1,377 @@
+---
+title: "projectAnalysis_YourName"
+subtitle: "BIO 201 Project Data Analysis"
+author: "Your Name"
+date: "November , 2025"
+format: 
+  html:
+    code-overflow: wrap
+    embed-resources: true
+---
+
+## Load necessary packages
+
+Run the code below at the start of the session to make sure all the necessary packages are loaded. If you add any packages, put them in this same code chunk and put a comment next to it for what you used it for.
+
+It is recommended that you put all your code to load packages in one R chunk at the start. Run the chunk below by clicking the little green arrow at the top right of the code chunk.
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+suppressPackageStartupMessages(
+  library(tidyverse)) ## for readr, dplyr, ggplot2
+library(rstatix, warn.conflicts = FALSE) #pipe friendly framework for basic stats
+library(ggpubr, warn.conflicts = FALSE) #publication ready plots & QQ plots
+library(labelled) #for labeling variables better
+library(ggstats) #for gglikert() to make nice bar graphs for survey questions
+
+
+```
+
+
+Copy, paste, and tweak the necessary script templates into the code chunks below.
+
+
+## Import Data
+
+
+```{r}
+#| label: import data
+
+#Import data files
+
+#replace the blank below with the name of your HRV data
+#make sure that you put the .csv file into data folder
+my.df <- read_csv("data/___.csv",
+                  show_col_types = FALSE)
+
+#Change independent categorical variables to factors
+#replace the blanks after my.df$ with the column name of the 
+#independent categorical variable 
+#(make sure to use the same column name on the same line)
+#replace the blanks in quotes with the levels within each column
+#make sure you put the levels in the right order 
+#for example 
+#my.df$time.measured <- factor(my.df$time.measured, levels = c("Before", "After"))
+my.df$___ <- factor(my.df$___, 
+                    levels = c("___", "___"))
+my.df$___ <- factor(my.df$___, 
+                    levels = c("___", "___"))
+
+#replace the blank below with the name of your subjects data
+#make sure that you put the .csv file into data folder
+subjects <- read_csv("data/___.csv")
+
+
+#replace the blank below with the name of your metadata file
+##make sure that you put the .csv file into data folder
+metadata <- read_csv("data/____.csv")
+
+
+#create variable labels using the labelled package
+variable_labels <- metadata |> 
+  dplyr::select(variable, variable_label) |> 
+  deframe()
+
+#add labels to data
+my.df <- my.df |> 
+  left_join(subjects) |> 
+  labelled::set_variable_labels(!!!variable_labels)
+
+
+
+```
+
+Make sure your data imported correctly by looking at it. 
+
+Next we will relabel some of our variables so they can easily be used with the template code and avoid rewriting the column names a lot of times.
+
+Replace **ONLY** the blanks in the code below as instructed
+
+```{r}
+#| label: define variables
+
+#Define your variables here to avoid having to type them as much
+
+#define the continuous variable of choice 
+cont.var <- "___" 
+
+#define the categorical variable that is your within-subjects factor column name
+#remove this line if you do not have a within-subjects factor
+w.factor.var <- "___"
+
+#define the categorical variable that is your between-subjects factor column name
+##remove this line if you do not have a between-subjects factor
+b.factor.var <- "___"
+
+#define the name of the column that contains your subject identifiers
+subject.ID <- "___"
+
+
+
+```
+
+
+
+## Data Exploration
+
+
+For this section, look in the script_templates folder and then data_exploration subfolder for the necessary script templates. 
+
+### QQ Plots to Assess Normality
+
+Check to see if the continuous dependent variable is normally distributed. 
+
+```{r}
+#| label: Continuous dependent variable QQ plots 
+
+
+
+```
+
+
+### Check for outliers
+
+Let's look for outliers next.
+
+```{r}
+#| label: identify outliers 
+
+
+
+
+```
+
+
+The result above shows how many rows (if any) contain outliers. If it says 0 rows, that would indicate that there were no outliers. 
+
+You may want to click on the little "Show in new window" icon at the top right of the results to see the whole table of results more easily. Either way, make sure you fully scroll to the right to see the last column in the results labeled "is.extreme". If there are any extreme outliers, you may want to filter those subjects out and rerun the descriptive statistics. 
+
+If there are no extreme outliers, then delete the code chunk below. If there are outliers that you remove, you must note that you removed them and why in your results (you might want to look at the information about the subject to see if you can see why they were an outlier or make sure you wrote the values down correctly in the original spreadsheet). You may want to run the analysis with and without the outlier(s) so see how they impact the results.
+
+```{r}
+#| label: remove outliers
+
+#if you want to remove an outlier
+#fill in the blank with the number of the subject you want to remove
+#you can remove more than one by adding subject != ___ more than once
+#within the filter function separated by a comma
+#dplyr::filter(subject != ___, subject != ___)
+
+
+df <- df |> 
+  dplyr::filter(subject != ___)
+
+
+```
+
+
+### Descriptive Statistics
+
+I recommend starting with the script to give you all the descriptive statistics. Then you will have everything in your notes in case you need them later. 
+
+```{r}
+#| label: descriptive stats
+
+
+
+```
+
+Paste in the template code for rounding the SD below
+
+```{r}
+#| label: rounding the SD
+
+
+
+
+```
+
+Round the descriptive statistics to the same decimal place as the rounded SD values given above.
+
+```{r}
+#| label: rounded descriptive stats
+
+
+
+```
+
+
+If you decide you want a formatted table of a subset of the descriptive statistics, then load the `flextable` package in the setup code chunk at the start of this Quarto file and then add a code chunk to make the desired formatted table below.
+
+
+
+### HRV Graph
+
+Let's graph the HRV variable. 
+
+```{r}
+#| label: HRV graph
+
+
+
+
+
+
+
+
+# save the graph! (.png or .jpg file types are recommended)
+ggsave(filename = "results/HRVgraph.png",  
+       plot = ___,   #put the object name of your plot here
+       height = 5, width = 8, units = "in", 
+       dpi = 300)
+
+```
+
+Make sure you have included proper axis titles that include units where needed. Make sure to also use the correct measure of central tendency (mean if data are normal, median if data are not normal). You can change the stat_summary code above from mean to median as needed.
+
+
+
+## Inferential Statistics
+
+### Effect Size Calculations and Graph
+
+To pick the right test, we need to determine if the distribution is normal and if the variance is equal.
+
+-   **Normal Distribution, Equal Variance:** If the data is normal, and the two groups have similar dispersion (i.e. similar variance), then you should use "regular" **Cohen's d effect size (*d*)**
+
+-   **Unequal Variance:** If the data has unequal dispersion (i.e. unequal variance), then you should use the **Cohen's d for Welch test effect size (*d*)**
+
+-   **Non-normal Distribution, Equal Variance:** If the data is NOT normal but the two groups have similar dispersion (i.e. similar variance), then you should use the **Wilcoxon effect size (*r*)** (note that some statisticians recommend to use the Cohen's d for Welch test effect size if the variance is very different even if the distribution is not normal)
+
+Select the correct effect size from the script templerates based on your data. Select the entire script (control-A or command-A), copy it (control-C or command-C), paste it in the code chunk below (control-V or command-V), and then run it.
+
+```{r}
+#| label: effect size
+
+
+
+
+
+
+
+
+
+
+# save the graph (.png or .jpg file types are recommended)
+ggsave(filename = "results/____.png",    #give your graph a name you will remember
+       plot = ___,   #put the object name of your effect size graph here
+       height = 5, width = 3, units = "in", 
+       dpi = 300)
+
+```
+
+Remember to look at the magnitude of the effect (scroll all the way to the right or click on the object made that gives the effect size results in the Environment) and record the effect size (effsize) and the 95% CI (conf.low and conf.high). If the 95% CI includes zero, then the effect is not significantly different from zero (which is what we predicted for the two groups at baseline).
+
+We also made a graph that shows the effect size results visually. In this case, the point represents the value of the effect size that you chose (Cohen's d, Cohen's d for Welch test, or the Wilcoxon paired signed-rank test) and the vertical lines represent the 95% confidence interval calculated using the adjusted bootstrap percentile (BCa) method.
+
+If the 95% CI includes zero (shown by crossing over the dotted line), then that effect size is not significantly different from zero (meaning there is no evidence of an effect). 
+
+
+## Survey Results
+
+You can also make graphs that show the results from the survey(s) you had your subjects answer. 
+
+Go to the script_templates folder then select the graphing subfolder followed by the bar_graphs subfolder. You might also want to look at the example analysis to see how survey results can be presented.
+
+```{r}
+#| label: survey results
+
+
+
+
+
+
+
+
+# save the graph (.png or .jpg file types are recommended)
+ggsave(filename="results/___.png", 
+       plot = ___,   #put the object name of your survey bar graph here
+       height = 4, width = 6, units = "in", 
+       dpi = 300)
+
+
+```
+
+
+
+## Finishing Up
+
+Any graph files you save using the `ggsave()` function should appear in the results folder within the project folder.
+
+If you are working on the Smith server, you will first need to export this file to your computer (it is simplest to do one graph at a time):
+
+-   Check the box next to the graph file
+
+-   Go to the "More" menu with the gear icon and click the drop down arrow
+
+-   Select "Export" and then save the file to your computer
+
+You can now insert your graphs into your Group Folder and Group Presentation so everyone in your group has access to the graphs you made.
+
+
+### R & Package Versions and Citation Information
+
+In addition to citing journal articles and other references, in a full scientific paper you should cite what software was used for the analysis.
+
+While it will not be a requirement to cite R and the packages used in the results slide show, you should have all the packages and their versions in your records (this rendered quarto document will be kept as that record).
+
+Optionally, you can refer to [How to Cite R](https://docs.google.com/presentation/d/1RG4_R-MDOy1vbMz-M1gfOcMtgqWu9Kvv_R4ex5QdcVk/edit?usp=sharing) if you want to know how to cite in the text as well as the full citation in the Literature Cited section at the end of a scientific paper.
+
+Run the code below to get a full record of the version of R and all packages used.
+
+
+```{r}
+#| label: sessionInfo
+
+sessionInfo()
+
+```
+
+It is good to have a record of the actual citation information for R and the packages used.
+
+Use the code below to get the information to cite R itself
+
+```{r}
+#| label: cite R
+
+#citation info for base R 
+citation()
+
+```
+
+Use the code below to cite the {tidyverse} package and then repeat the code replacing "tidyverse" with any other packages you need to cite
+
+```{r}
+#| label: citing packages
+
+citation("tidyverse")
+citation("ggpubr")
+citation("rstatix")
+citation("labelled")
+citation("ggstats")
+
+```
+
+### Render this File to HTML & Print to PDF
+
+Don't forget to "render" your .qmd file when you are done.
+
+-   Before you Render
+
+    -   Make sure that each code chunk has an unique label name or no name
+
+    -   Save this file and give it the name "projectAnalysis_YourName.qmd" (replace your name with the "YourName" part)
+
+-   Render this Quarto file to HTML (just select the Render menu item at the top of this window)
+
+-   If the HTML file didn't already open in your browser, then click on the name of the file in the Files window and select "View in Web Browser"
+
+-   Once the HTML file is open in your web browser, then use the print function within your browser to save it as a PDF. Please name your PDF file "projectAnalysis_YourName.pdf" (again, replace your name with the "YourName" part)
+
+-   Make sure the PDF file is saved somewhere on your computer that you can get to
+
+-   Place a copy of the PDF file in your GROUP Google Drive folder for this class
+

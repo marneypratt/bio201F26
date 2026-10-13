@@ -1,0 +1,15 @@
+variable,variable_label,variable_type,variable_info,dataset
+subject,Subject,numerical,discrete (positive range),"crossover_data, subjects"
+age,Age (years),numerical,discrete (positive range),subjects
+gender,Gender Identity,categorical,"Female, Nonbinary (2 levels)",subjects
+period,Testing Period,categorical,"1 = first testing period, 2 = second testing period (2 levels)",crossover_data
+sequence,Testing sequence,categorical,"Scrolling First, Nature First (2 levels)",crossover_data
+treatment,Treatment,categorical,"Scrolling, Nature (2 levels)",crossover_data
+SDNN,Standard Deviation of the R-R intervals (ms),numerical,continuous,crossover_data
+sleep,Do you get enough sleep?,character,,subjects
+satiated,Have you had enough to eat today?,character,,subjects
+feeling,"How are you feeling right now, with 1 being very negative and 5 being very positive?",numerical,discrete (positive range),subjects
+energy,What is your energy level right now (with 1 being lowest and 5 being highest),numerical,discrete (positive range),subjects
+caffeine_regular,Do you regularly drink something caffeinated?,character,,subjects
+caffeine_last,"When was the last time you had caffeine (for example, what type of beverage and how many oz did you drink)?",character,,subjects
+like_nature,Do you like spending time outside in nature?,character,,subjects
