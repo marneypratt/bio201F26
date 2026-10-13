@@ -1,6 +1,8 @@
 #grip example
 two-factor-example-grip.qmd
 
+#all figures in figures folder
+figures/
 
 # History files
 .Rhistory
