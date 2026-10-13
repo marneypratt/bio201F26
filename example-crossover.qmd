@@ -2,7 +2,8 @@
 title: "projectAnalysis_YourName"
 subtitle: "BIO 201 Project Data Analysis"
 author: "Your Name"
-date: "November , 2025"
+date: today
+date-format: long
 format: 
   html:
     code-overflow: wrap
@@ -26,6 +27,7 @@ library(rstatix, warn.conflicts = FALSE) #pipe friendly framework for basic stat
 library(ggpubr, warn.conflicts = FALSE) #publication ready plots & QQ plots
 library(labelled) #for labeling variables better
 library(ggstats) #for gglikert() to make nice bar graphs for survey questions
+library(gt) # formatted tables
 
 
 ```
@@ -43,18 +45,18 @@ Copy, paste, and tweak the necessary script templates into the code chunks below
 
 #replace the blank below with the name of your HRV data
 #make sure that you put the .csv file into data folder
-my.df <- read_csv("data/example-data/nature/crossover_data.csv",
+mydf <- read_csv("data/example-data/nature/crossover_data.csv",
                   show_col_types = FALSE)
 
 #Change independent categorical variables to factors
-#replace the blanks after my.df$ with the column name of the 
+#replace the blanks after mydf$ with the column name of the 
 #independent categorical variable 
 #(make sure to use the same column name on the same line)
 #replace the blanks in quotes with the levels within each column
 #make sure you put the levels in the right order 
 #for example 
-#my.df$time.measured <- factor(my.df$time.measured, levels = c("Before", "After"))
-my.df$treatment <- factor(my.df$treatment, 
+#mydf$time_measured <- factor(mydf$time_measured, levels = c("Before", "After"))
+mydf$treatment <- factor(mydf$treatment, 
                     levels = c("Scrolling", "Nature"))
 
 
@@ -74,7 +76,7 @@ variable_labels <- metadata |>
   deframe()
 
 #add labels to data
-my.df <- my.df |> 
+mydf <- mydf |> 
   left_join(subjects) |> 
   set_variable_labels(!!!variable_labels)
 
@@ -93,7 +95,7 @@ Replace **ONLY** the blanks in the code below as instructed
 #Define your variables here to avoid having to type them as much
 
 #define the continuous variable of choice 
-cont.var <- "SDNN" 
+cont_var <- "SDNN" 
 
 #define the categorical variable that is your within-subjects factor column name
 #remove this line if you do not have a within-subjects factor
@@ -129,8 +131,8 @@ Check to see if the continuous dependent variable is normally distributed.
 
 #make a QQ plot for each dependent variable that is continuous
 ggpubr::ggqqplot(
-  data = my.df,               #put the data frame name here 
-  x = {{ cont.var }},                  #put the continuous variable name here
+  data = mydf,               #put the data frame name here 
+  x = {{ cont_var }},                  #put the continuous variable name here
   color = {{ w.factor.var }},       #put the within subjects factor here (remove if no factors)
 ) 
 
@@ -151,14 +153,14 @@ Let's look for outliers next.
 
 
 #test for outliers
-my.df  |> 
+mydf  |> 
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
   group_by(.data[[w.factor.var]], .data[[b.factor.var]] )  |> 
   
   
-  rstatix::identify_outliers({{ cont.var }}) 
+  rstatix::identify_outliers({{ cont_var }}) 
 
 
 ```
@@ -199,9 +201,9 @@ I recommend starting with the script to give you all the descriptive statistics.
 # the variables included here need to be defined to get this code to run
 
 
-df.sum <- my.df  |>  
+df.sum <- mydf  |>  
   # remove missing values from continuous variables
-  filter(!is.na(.data[[cont.var]])) |> 
+  filter(!is.na(.data[[cont_var]])) |> 
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
@@ -210,12 +212,12 @@ df.sum <- my.df  |>
   # calculate the descriptive stats
   # you don't need to change anything below 
   # leave the parentheses for n() empty
-  summarize(Mean = mean(.data[[cont.var]]), 
-            Median = median(.data[[cont.var]]), 
-            SD = sd(.data[[cont.var]]), 
-            IQR = IQR(.data[[cont.var]]), 
-            Min = min(.data[[cont.var]]),
-            Max = max(.data[[cont.var]]),
+  summarize(Mean = mean(.data[[cont_var]]), 
+            Median = median(.data[[cont_var]]), 
+            SD = sd(.data[[cont_var]]), 
+            IQR = IQR(.data[[cont_var]]), 
+            Min = min(.data[[cont_var]]),
+            Max = max(.data[[cont_var]]),
             Sample.size = n())
 
 df.sum
@@ -235,17 +237,17 @@ Paste in the template code for rounding the SD below
 # the variables included here need to be defined to get this code to run
 
 #calculate rounded SD
-my.df |> 
+mydf |> 
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
   group_by(.data[[w.factor.var]])  |> 
   
   # remove missing values 
-  filter(!is.na(.data[[cont.var]])) |> 
+  filter(!is.na(.data[[cont_var]])) |> 
   
   #calculate the rounded values
-  summarise(SD = signif(sd(.data[[cont.var]]), digits=2))
+  summarise(SD = signif(sd(.data[[cont_var]]), digits=2))
 
 
 
@@ -273,9 +275,9 @@ round.digit <- 1
 
 
 # replace the blank with the cleaned data frame name 
-my.df  |>  
+mydf  |>  
   # remove missing values from continuous variables
-  filter(!is.na(.data[[cont.var]])) |> 
+  filter(!is.na(.data[[cont_var]])) |> 
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
@@ -284,13 +286,13 @@ my.df  |>
   # calculate the descriptive stats
   # do not place anything in the empty parentheses in the n() 
   summarize(Sample.size = n(),
-            Min = round(min(.data[[cont.var]]), digits=round.digit),
-            Q1 = round(quantile(.data[[cont.var]], .25), digits=round.digit),
-            Median = round(median(.data[[cont.var]]), digits=round.digit),
-            Q3 = round(quantile(.data[[cont.var]], .75), digits=round.digit),
-            Max = round(max(.data[[cont.var]]), digits=round.digit),
-            Mean = round(mean(.data[[cont.var]]), digits=round.digit),              
-            SD = signif(sd(.data[[cont.var]]), digits=2))
+            Min = round(min(.data[[cont_var]]), digits=round.digit),
+            Q1 = round(quantile(.data[[cont_var]], .25), digits=round.digit),
+            Median = round(median(.data[[cont_var]]), digits=round.digit),
+            Q3 = round(quantile(.data[[cont_var]], .75), digits=round.digit),
+            Max = round(max(.data[[cont_var]]), digits=round.digit),
+            Mean = round(mean(.data[[cont_var]]), digits=round.digit),              
+            SD = signif(sd(.data[[cont_var]]), digits=2))
 
 
 ```
@@ -316,9 +318,9 @@ Let's graph the HRV variable.
 #make the plot
 
 line.plot <- ggplot(
-  data = my.df, 
+  data = mydf, 
   aes(
-    y = .data[[cont.var]], 
+    y = .data[[cont_var]], 
     x = .data[[w.factor.var]],
     group = .data[[subject.ID]])) +
   geom_point(size = 2, color = "orange", alpha = 0.8) +
@@ -369,13 +371,13 @@ Select the correct effect size from the script templates based on your data. You
 #| label: effect size
 
 #to run this code, make sure the rstatix package is loaded
-#make sure you have also already defined your variables (cont.var & b.factor.var)
+#make sure you have also already defined your variables (cont_var & b.factor.var)
 
 
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
-response <- cont.var
+response <- cont_var
 predictor <- w.factor.var
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
@@ -385,7 +387,7 @@ formula_object <- as.formula(formula_string)
 
 crossover.effectSize.results <- 
   rstatix::cohens_d(
-    data = my.df,
+    data = mydf,
     formula_object, 
     paired = TRUE,       #TRUE for within-subjects, FALSE for between-subjects
     var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
@@ -451,17 +453,17 @@ Go to the script_templates folder then select the graphing subfolder followed by
 #first we need to change the format of the data from long to wide
 #this way, we will have one row for each subject and can take a difference
 #between the after and before values
-my.df.wide  <- my.df |> 
-  dplyr::select(.data[[subject.ID]], .data[[b.factor.var]], .data[[w.factor.var]], .data[[cont.var]]) |> 
+mydf.wide  <- mydf |> 
+  dplyr::select(.data[[subject.ID]], .data[[b.factor.var]], .data[[w.factor.var]], .data[[cont_var]]) |> 
   pivot_wider(
     names_from = .data[[w.factor.var]],
 
-    values_from = .data[[cont.var]]
+    values_from = .data[[cont_var]]
   )
 
 #next, take the difference between the values for each subject
-my.df.diff <- my.df.wide |> 
-  mutate(change.cont.var = Nature - Scrolling) |> 
+mydf.diff <- mydf.wide |> 
+  mutate(change.cont_var = Nature - Scrolling) |> 
   left_join(subjects)
 
 likert_levels <- 1:5
@@ -474,7 +476,7 @@ likert_labels <- c(
   "Very Positive"
 )
 
-my.df.diff$feeling <- factor(my.df.diff$feeling, 
+mydf.diff$feeling <- factor(mydf.diff$feeling, 
                         levels = likert_levels, 
                         labels = likert_labels, 
                         ordered = TRUE)
@@ -488,17 +490,17 @@ likert_labels2 <- c(
   "Very High"
 )
 
-my.df.diff$energy <- factor(my.df.diff$energy, 
+mydf.diff$energy <- factor(mydf.diff$energy, 
                         levels = likert_levels, 
                         labels = likert_labels2, 
                         ordered = TRUE)
 
 
-my.df.diff$caffeine.regular <- factor(my.df.diff$caffeine.regular, 
+mydf.diff$caffeine.regular <- factor(mydf.diff$caffeine.regular, 
                           levels = c("No", "Sometimes", "Yes"))
 
 
-my.df.diff <- my.df.diff |>
+mydf.diff <- mydf.diff |>
     set_variable_labels(
       energy = "Subject energy level before the experiment",
       feeling = "How subjects felt before the experiment",
@@ -508,22 +510,22 @@ my.df.diff <- my.df.diff |>
       caffeine.regular = "Do you regularly drink something caffeinated?"
     )
 
-energy.survey <- gglikert(my.df.diff, include = c(energy),
+energy.survey <- gglikert(mydf.diff, include = c(energy),
          add_totals = FALSE,
          y_label_wrap = 25)
 energy.survey 
 
-feeling.survey <- gglikert(my.df.diff, include = c(feeling),
+feeling.survey <- gglikert(mydf.diff, include = c(feeling),
          add_totals = FALSE,
          y_label_wrap = 25)
 feeling.survey
 
-caff.survey <-gglikert(my.df.diff, include = c(caffeine.regular),
+caff.survey <-gglikert(mydf.diff, include = c(caffeine.regular),
          add_totals = FALSE,
          y_label_wrap = 25)
 caff.survey
 
-binary.survey <- gglikert(my.df.diff, include = c(sleep, satiated, like.nature),
+binary.survey <- gglikert(mydf.diff, include = c(sleep, satiated, like.nature),
          add_totals = FALSE,
          y_label_wrap = 25,
          labels_color = "black") +
@@ -617,6 +619,7 @@ citation("ggpubr")
 citation("rstatix")
 citation("labelled")
 citation("ggstats")
+citation("gt")
 
 ```
 
