@@ -2,17 +2,16 @@
 #with one within subjects factor and 
 #one between subjects factor
 #the ggplot2 and ggpubr packages must be loaded for this code to work
-
-#make sure your variables are already defined
+# make sure your variables are already defined using "define_variables.R"
 
 
 #create main effect plot 
-main.trt.plot <- ggplot(
-  data = my.df, 
+main_trt_plot <- ggplot(
+  data = mydf, 
   aes(
-    y = .data[[cont.var]], 
-    x = .data[[b.factor.var]])) +
-  geom_point(aes(color = .data[[w.factor.var]], shape = .data[[w.factor.var]]), 
+    y = .data[[cont_var]], 
+    x = .data[[b_factor]])) +
+  geom_point(aes(color = .data[[w_factor]], shape = .data[[w_factor]]), 
              size = 3, alpha = 0.9) +
   
   ###this bit of code adds the horizontal bar - use median or mean as needed
@@ -30,7 +29,7 @@ main.trt.plot <- ggplot(
 
 #recolor the plot (you can change these colors 
 #but make sure they are color-blind friendly)
-main.trt.plot <- ggpubr::ggpar(main.trt.plot, palette = c("#EE7733", "#0077BB"))
+main_trt_plot <- ggpubr::ggpar(main_trt_plot, palette = c("#EE7733", "#0077BB"))
 
 
-main.trt.plot
+main_trt_plot

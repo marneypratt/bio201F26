@@ -1,17 +1,17 @@
 #use this code to make a line plot 
 #with one within subjects factor and 
 #the ggplot2 package must be loaded 
-#variables must be defined (cont.var, w.factor.var, subject.ID) for this code to work
+# make sure your variables are already defined using "define_variables.R"
 
 
 #make the plot
 
-line.plot <- ggplot(
-  data = my.df, 
+line_plot <- ggplot(
+  data = mydf, 
   aes(
-    y = .data[[cont.var]], 
-    x = .data[[w.factor.var]],
-    group = .data[[subject.ID]])) +
+    y = .data[[cont_var]], 
+    x = .data[[w_factor]],
+    group = .data[[subject_ID]])) +
   geom_point(size = 2, color = "orange", alpha = 0.8) +
   geom_line(color = "grey86") + 
   
@@ -26,4 +26,4 @@ line.plot <- ggplot(
   
   theme_classic(base_size=14) 
 
-line.plot
+line_plot

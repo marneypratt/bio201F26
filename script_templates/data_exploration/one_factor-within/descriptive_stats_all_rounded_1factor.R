@@ -1,6 +1,6 @@
 # the code below will calculate descriptive statistics for a variable of interest grouped by another variable
 # the dplyr package must be loaded before this will work
-# the variables included here need to be defined to get this code to run
+# make sure your variables are already defined using "define_variables.R"
 
 
 # Use the following for digits in the `round` function

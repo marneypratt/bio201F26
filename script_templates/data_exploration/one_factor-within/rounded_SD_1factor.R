@@ -2,16 +2,16 @@
 # grouped by up to two factors (remove any factors as needed)
 # the SD will be rounded to two significant figures
 # the dplyr package must be loaded before this will work
-# the variables included here need to be defined to get this code to run
+# make sure your variables are already defined using "define_variables.R"
 
 #calculate rounded SD
-my.df |> 
+mydf |> 
   
   #this groups by a defined within subjects factor
-  group_by(.data[[w.factor.var]])  |> 
+  group_by(.data[[w_factor]])  |> 
   
   # remove missing values 
-  filter(!is.na(.data[[cont.var]])) |> 
+  filter(!is.na(.data[[cont_var]])) |> 
   
   #calculate the rounded values
-  summarise(SD = signif(sd(.data[[cont.var]]), digits=2))
+  summarise(SD = signif(sd(.data[[cont_var]]), digits=2))

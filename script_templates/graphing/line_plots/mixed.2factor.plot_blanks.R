@@ -4,7 +4,7 @@
 #the ggplot2 package must be loaded for this code to work
 
 #create 2 factor plot 
-factor2.plot <- ggplot(
+factor2_plot <- ggplot(
   data = ___,           #data frame name
   aes(
     y = ___,            #continuous dependent variable column name
@@ -24,7 +24,7 @@ factor2.plot <- ggplot(
   ylab("___") + #dependent variable label with units
   theme_classic(base_size=18) +
   facet_grid(~___)  #between subjects factor column name
-factor2.plot
+factor2_plot
 
 #see https://www.datanovia.com/en/lessons/mixed-anova-in-r/
 #for how to do post hoc tests

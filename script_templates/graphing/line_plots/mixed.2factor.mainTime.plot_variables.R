@@ -2,18 +2,17 @@
 #with one within subjects factor and 
 #one between subjects factor
 #the ggplot2 and ggpubr packages must be loaded for this code to work
-
-#make sure your variables are already defined
+# make sure your variables are already defined using "define_variables.R"
 
 
 #create main effect plot 
-main.time.plot <- ggplot(
-  data = my.df, 
+main_time_plot <- ggplot(
+  data = mydf, 
   aes(
-    y = .data[[cont.var]], 
-    x = .data[[w.factor.var]],
-    group = .data[[subject.ID]])) +
-  geom_point(aes(color = .data[[b.factor.var]], shape = .data[[b.factor.var]]), 
+    y = .data[[cont_var]], 
+    x = .data[[w_factor]],
+    group = .data[[subject_ID]])) +
+  geom_point(aes(color = .data[[b_factor]], shape = .data[[b_factor]]), 
              size = 3, alpha = 0.9) +
   geom_line(color = "grey86") + 
   
@@ -33,7 +32,7 @@ main.time.plot <- ggplot(
 
 #recolor the plot (you can change these colors 
 #but make sure they are color-blind friendly)
-main.time.plot <- ggpubr::ggpar(main.time.plot, palette = c("#EE7733", "#0077BB"))
+main_time_plot <- ggpubr::ggpar(main_time_plot, palette = c("#EE7733", "#0077BB"))
 
 
-main.time.plot
+main_time_plot

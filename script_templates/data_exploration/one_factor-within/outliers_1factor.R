@@ -1,5 +1,5 @@
 ## make sure to have the rstatix package loaded  
-## and the variables defined to get this code to run
+# make sure your variables are already defined using "define_variables.R"
 
 
 
