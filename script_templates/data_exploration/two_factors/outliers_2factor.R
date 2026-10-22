@@ -4,11 +4,11 @@
 
 
 #test for outliers
-my.df  |> 
+mydf  |> 
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
-  group_by(.data[[w.factor.var]], .data[[b.factor.var]] )  |> 
+  group_by(.data[[w_factor]], .data[[b_factor]] )  |> 
   
   
-  rstatix::identify_outliers({{ cont.var }}) 
+  rstatix::identify_outliers({{ cont_var }}) 
