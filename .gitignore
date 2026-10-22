@@ -54,4 +54,6 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# example and practice files
 projectAnalysis_MarneyPratt.qmd
