@@ -1,29 +1,34 @@
 # to use this code, the following packages must be loaded
 # tidyverse
-# flextable
-#see https://davidgohel.github.io/flextable/ for more info & formatting options
+# gt
+# make sure your variables are already defined using "define_variables.R"
 
-# replace the blank below with a continuous variable you want to summarize
-cont_var <- "___" 
+
+# Use the following for digits in the `round` function
+# 
+#    rounding to the tens place use digits=-1
+#    rounding to the ones place use digits=0
+#    rounding to the tenths place use digits=1
+#    rounding to the hundredths place use digits=2
+
+#set the number of digits to round to based on the rules above (this blank should be just a number)
+round_digit <- ___
+
 
 #calculate descriptive stats
-#replace the blank below with the name of the dataframe
-df_sum <- ___ |> 
+df_sum <- mydf |> 
   
-  # replace the blank with the categorical variable(s)
-  group_by(___) |> 
+  # adjust the categorical variable(s) as needed
+  group_by(.data[[b_factor]], .data[[w_factor]]) |> 
   
   # remove missing values 
   filter(!is.na(.data[[cont_var]])) |> 
-  
   # calculate the descriptive stats
-  # replace the blanks with the number of digits 
-  # to the right of the decimal place based on the rounded SD
   # do not place anything in the empty parentheses in the n() 
   # N represents the sample size within each group
-  summarise(Median = round(median(.data[[cont_var]]), digits=__),
-            min = round(min(.data[[cont_var]]), digits=__),
-            max = round(max(.data[[cont_var]]), digits=__),
+  summarise(Median = round(median(.data[[cont_var]]), digits=round_digit),
+            min = round(min(.data[[cont_var]]), digits=round_digit),
+            max = round(max(.data[[cont_var]]), digits=round_digit),
             N = n()) |> 
   mutate(Range = paste(min, max, sep = "-")) |> 
   dplyr::select(-min, -max) |> 

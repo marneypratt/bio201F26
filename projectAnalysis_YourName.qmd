@@ -2,11 +2,14 @@
 title: "projectAnalysis_YourName"
 subtitle: "BIO 201 Project Data Analysis"
 author: "Your Name"
-date: "November , 2025"
+date: today
+date-format: long
 format: 
   html:
     code-overflow: wrap
     embed-resources: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ## Load necessary packages
@@ -44,20 +47,20 @@ Copy, paste, and tweak the necessary script templates into the code chunks below
 
 #replace the blank below with the name of your HRV data
 #make sure that you put the .csv file into data folder
-my.df <- read_csv("data/___.csv",
+mydf <- read_csv("data/___.csv",
                   show_col_types = FALSE)
 
 #Change independent categorical variables to factors
-#replace the blanks after my.df$ with the column name of the 
+#replace the blanks after mydf$ with the column name of the 
 #independent categorical variable 
 #(make sure to use the same column name on the same line)
 #replace the blanks in quotes with the levels within each column
 #make sure you put the levels in the right order 
 #for example 
-#my.df$time.measured <- factor(my.df$time.measured, levels = c("Before", "After"))
-my.df$___ <- factor(my.df$___, 
+#mydf$time.measured <- factor(mydf$time.measured, levels = c("Before", "After"))
+mydf$___ <- factor(mydf$___, 
                     levels = c("___", "___"))
-my.df$___ <- factor(my.df$___, 
+mydf$___ <- factor(mydf$___, 
                     levels = c("___", "___"))
 
 #replace the blank below with the name of your subjects data
@@ -76,7 +79,7 @@ variable_labels <- metadata |>
   deframe()
 
 #add labels to data
-my.df <- my.df |> 
+mydf <- mydf |> 
   left_join(subjects) |> 
   labelled::set_variable_labels(!!!variable_labels)
 
@@ -96,18 +99,18 @@ Replace **ONLY** the blanks in the code below as instructed
 #Define your variables here to avoid having to type them as much
 
 #define the continuous variable of choice 
-cont.var <- "___" 
+cont_var <- "___" 
 
 #define the categorical variable that is your within-subjects factor column name
 #remove this line if you do not have a within-subjects factor
-w.factor.var <- "___"
+w_factor <- "___"
 
 #define the categorical variable that is your between-subjects factor column name
 ##remove this line if you do not have a between-subjects factor
-b.factor.var <- "___"
+b_factor <- "___"
 
 #define the name of the column that contains your subject identifiers
-subject.ID <- "___"
+subject_ID <- "___"
 
 
 

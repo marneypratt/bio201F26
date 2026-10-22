@@ -21,13 +21,11 @@ It is recommended that you put all your code to load packages in one R chunk at 
 
 suppressPackageStartupMessages(
   library(tidyverse)) ## for readr, dplyr, ggplot2
-library(ggbeeswarm) ## for jittering points (you can remove this is you did not use a dotplot)
-#library(flextable, warn.conflicts = FALSE) ## for making formatted tables that can be pasted elsewhere
 library(rstatix, warn.conflicts = FALSE) #pipe friendly framework for basic stats
 library(ggpubr, warn.conflicts = FALSE) #publication ready plots & QQ plots
 library(labelled) #for labeling variables better
-library(glue) #for making labels
 library(ggstats) #for gglikert() to make nice bar graphs for survey questions
+library(gt) #for formatted tables
 
 ```
 
@@ -35,13 +33,13 @@ library(ggstats) #for gglikert() to make nice bar graphs for survey questions
 
 The data used here are from a student project where HRV was measured for 19 subjects. All of the subjects had their HRV measured for 5 minutes while doing nothing (=Baseline) and while completing a small jigsaw puzzle. 
 
-Half of the subjects were told to take their time to complete the puzzle (Treatment A), and the other half were timed and encouraged to be as fast as possible (Treatment B). 
+Half of the subjects were told to take their time to complete the puzzle (Unstressed), and the other half were timed and encouraged to be as fast as possible (Time Stressed). 
 
-Thus, the dependent variable is any of the HRV variables, and there are two independent variables - (1) the time the HRV was measured (Baseline or Puzzle) and (2) the treatment group (A - unstressed by time, or B - stressed by time).
+Thus, the dependent variable is any of the HRV variables, and there are two independent variables - (1) the time the HRV was measured (Baseline or Puzzle) and (2) the treatment group (Unstressed, Time Stressed).
 
 Since there is one measurement variable (a measure of HRV), and two nominal variables (time of measurement, treatment), we can use a 2-Factor analysis to see if time pressure has a different effect on HRV than no time pressure.
 
-Because the same subject was measured twice (Baseline and Puzzle), we have to take that into account. 
+Because the same subject was measured twice (Baseline and Puzzle), we have to take that into account (this called within subjects or often called a repeated measure)
 
 The students who did this project predicted that time pressure would stimulate the sympathetic nervous system which could impact HRV. 
 
@@ -51,17 +49,17 @@ We will start by importing the data files by running the code below.
 #| label: import data
 
 #Import data file 
-my.df <- read_csv("data/example-data/puzzle/HRVdata.csv",
+mydf <- read_csv("data/example-data/puzzle/HRVdata.csv",
                   show_col_types = FALSE)
                  
 #Change independent categorical variables to factors
-my.df$test.period <- factor(my.df$test.period, 
+mydf$test_period <- factor(mydf$test_period, 
                              levels = c("Baseline", "Puzzle"))
-my.df$treatment <- factor(my.df$treatment, 
-                          levels = c("A", "B"))
+mydf$treatment <- factor(mydf$treatment, 
+                          levels = c("Unstressed", "Time Stressed"))
 
 # Modify factor levels
-levels(my.df$treatment) <- c("Unstressed", "Time Stressed")
+levels(mydf$treatment) <- c("Unstressed", "Time Stressed")
 
 subjects <- read_csv("data/example-data/puzzle/subjects.csv")
 
@@ -73,7 +71,7 @@ variable_labels <- metadata |>
   deframe()
 
 #add labels to data
-my.df <- my.df |> 
+mydf <- mydf |> 
   left_join(subjects) |> 
   set_variable_labels(!!!variable_labels)
 
@@ -83,9 +81,9 @@ my.df <- my.df |>
 
 ```
 
-Take a look at the dataset we just created by clicking on "my.df" in the Environment tab in the upper right RStudio window.
+Take a look at the dataset we just created by clicking on "mydf" in the Environment tab in the upper right RStudio window.
 
-Note that this dataset, which we named "my.df" (for "my data frame", which is just a generic way to name a data frame making it easier to use template or example code), includes a tidy data spreadsheet. Each column has a column name and a more descriptive label that we added using the `set_variable_labels` function from the `labelled` package.
+Note that this dataset, which we named "mydf" (for "my data frame", which is just a generic way to name a data frame making it easier to use template or example code), includes a tidy data spreadsheet. Each column has a column name and a more descriptive label that we added using the `set_variable_labels` function from the `labelled` package.
 
 Next we will relabel some of our variables so they can easily be used with the template code and avoid rewriting the column names a lot of times.
 
@@ -95,16 +93,16 @@ Next we will relabel some of our variables so they can easily be used with the t
 #Define your variables and redefine your dataframe name here to avoid having to type them a lot
 
 #define the continuous variable of choice 
-cont.var <- "SDNN" 
+cont_var <- "SDNN" 
 
 #define the categorical variable that is your within-subjects factor 
-w.factor.var <- "test.period"
+w_factor <- "test_period"
 
 #define the categorical variable that is your between-subjects factor 
-b.factor.var <- "treatment"
+b_factor <- "treatment"
 
 #define the name of the column that contains your subject identifiers
-subject.ID <- "subject"
+subject_ID <- "subject"
 
 
 
@@ -127,23 +125,23 @@ Note that we will use the 2 factors in the `group_by()` function to see the desc
 
 # the code below will calculate descriptive statistics for a variable of interest grouped by another variable
 
-df.sum <- my.df  |>  
+mydf_sum <- mydf  |>  
   # remove missing values from continuous variables
-  filter(!is.na(.data[[cont.var]])) |> 
+  filter(!is.na(.data[[cont_var]])) |> 
   
   # Group the data by your 2 factors
-  group_by(.data[[b.factor.var]], .data[[w.factor.var]]) |> 
+  group_by(.data[[b_factor]], .data[[w_factor]]) |> 
   
   # calculate the descriptive stats
-  summarize(mean = mean(.data[[cont.var]]), 
-            median = median(.data[[cont.var]]), 
-            SD = sd(.data[[cont.var]]), 
-            IQR = IQR(.data[[cont.var]]), 
-            min = min(.data[[cont.var]]),
-            max = max(.data[[cont.var]]),
+  summarize(mean = mean(.data[[cont_var]]), 
+            median = median(.data[[cont_var]]), 
+            SD = sd(.data[[cont_var]]), 
+            IQR = IQR(.data[[cont_var]]), 
+            min = min(.data[[cont_var]]),
+            max = max(.data[[cont_var]]),
             N = n())
 
-df.sum
+mydf_sum
 
 
 
@@ -156,16 +154,16 @@ How should we round these variables? Recall that you can use the SD as the indic
 
 
 #calculate rounded SD
-my.df |> 
+mydf |> 
   
   # replace the blank with the categorical variable(s)
-  group_by(.data[[b.factor.var]], .data[[w.factor.var]]) |> 
+  group_by(.data[[b_factor]], .data[[w_factor]]) |> 
   
   # remove missing values 
-  filter(!is.na(.data[[cont.var]])) |> 
+  filter(!is.na(.data[[cont_var]])) |> 
   
   #calculate the rounded values
-  summarise(SD = signif(sd(.data[[cont.var]]), digits=2))
+  summarise(SD = signif(sd(.data[[cont_var]]), digits=2))
 
 ```
 
@@ -183,28 +181,28 @@ In the case above, we should round the SD to the tenths or ones place to get it 
 #    rounding to the hundredths place use digits=2
 
 #set the number of digits to round to based on the rules above (this blank should be just a number)
-round.digit <- 0
+round_digit <- 0
 
 
 # replace the blank with the cleaned data frame name 
-my.df  |>  
+mydf  |>  
   # remove missing values from continuous variables
-  filter(!is.na(.data[[cont.var]])) |> 
+  filter(!is.na(.data[[cont_var]])) |> 
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
-  group_by(.data[[b.factor.var]], .data[[w.factor.var]] )  |> 
+  group_by(.data[[b_factor]], .data[[w_factor]] )  |> 
   
   # calculate the descriptive stats
   # do not place anything in the empty parentheses in the n() 
   summarize(Sample.size = n(),
-            Min = round(min(.data[[cont.var]]), digits=round.digit),
-            Q1 = round(quantile(.data[[cont.var]], .25), digits=round.digit),
-            Median = round(median(.data[[cont.var]]), digits=round.digit),
-            Q3 = round(quantile(.data[[cont.var]], .75), digits=round.digit),
-            Max = round(max(.data[[cont.var]]), digits=round.digit),
-            Mean = round(mean(.data[[cont.var]]), digits=round.digit),              
-            SD = signif(sd(.data[[cont.var]]), digits=2))
+            Min = round(min(.data[[cont_var]]), digits=round_digit),
+            Q1 = round(quantile(.data[[cont_var]], .25), digits=round_digit),
+            Median = round(median(.data[[cont_var]]), digits=round_digit),
+            Q3 = round(quantile(.data[[cont_var]], .75), digits=round_digit),
+            Max = round(max(.data[[cont_var]]), digits=round_digit),
+            Mean = round(mean(.data[[cont_var]]), digits=round_digit),              
+            SD = signif(sd(.data[[cont_var]]), digits=2))
 
 ```
 
@@ -222,10 +220,10 @@ The `color` and `facet.by` functions splits the plots up by any factors you have
 
 #make a QQ plot for each dependent variable that is continuous
 ggpubr::ggqqplot(
-  data = my.df,               #put the data frame name here 
-  x = {{ cont.var }},                  #put the continuous variable name here
-  color = {{ b.factor.var }},       #put the between subjects factor here (remove if no factors)
-  facet.by = {{ w.factor.var }}  #put the within subjects factors here (remove if no factors)
+  data = mydf,               #put the data frame name here 
+  x = {{ cont_var }},                  #put the continuous variable name here
+  color = {{ b_factor }},       #put the between subjects factor here (remove if no factors)
+  facet.by = {{ w_factor }}  #put the within subjects factors here (remove if no factors)
   )  
 
 ```
@@ -242,15 +240,15 @@ Let's look for outliers next.
 #| label: identify outliers 
 
 #test for outliers
-outliers <- my.df  |> 
-  group_by(.data[[w.factor.var]], .data[[b.factor.var]] )  |> 
-  rstatix::identify_outliers({{ cont.var }}) 
+outliers <- mydf  |> 
+  group_by(.data[[w_factor]], .data[[b_factor]] )  |> 
+  rstatix::identify_outliers({{ cont_var }}) 
 
 outliers 
 
 ```
 
-If an outlier is extreme, you may decide to run the analysis with and without the outlier(s) to see the impact on the results. Since these two outliers are not extreme, we will leave them in but it is good to note.
+If an outlier is extreme, you may decide to run the analysis with and without the outlier(s) to see the impact on the results. Since these subject #6 is an extreme outlier, we will remove that subject and re-graph the QQ plot.
 
 ```{r}
 #| label: remove outliers 
@@ -259,28 +257,35 @@ If an outlier is extreme, you may decide to run the analysis with and without th
 #fill in the blank with the number of the subject you want to remove
 #remove the hashtags in front of the code below
 
-my.df <- my.df |>
+mydf <- mydf |>
   dplyr::filter(subject != 6)
 
 
+#make a QQ plot for each dependent variable that is continuous
+ggpubr::ggqqplot(
+  data = mydf,               #put the data frame name here 
+  x = {{ cont_var }},                  #put the continuous variable name here
+  color = {{ b_factor }},       #put the between subjects factor here (remove if no factors)
+  facet.by = {{ w_factor }}  #put the within subjects factors here (remove if no factors)
+  ) 
+
 ```
 
-If you want to report any of the descriptive statistics, it really is not necessary to report all of them. Since this dataset is reasonably normal, we can use the mean and SD to summarize the data.
+Remember that it is not necessary to report all of the descriptive statistics. Since this dataset is reasonably normal, we can use the mean and SD to summarize the data.
 
 ```{r}
 #| label: formatted table
 
-#see https://davidgohel.github.io/flextable/ for more info & formatting options
 
 #calculate descriptive stats
 #replace the blank below with the name of the dataframe
-df.sum <- my.df |> 
+df_sum <- mydf |> 
   
   # replace the blank with the categorical variable(s)
-  group_by(.data[[b.factor.var]], .data[[w.factor.var]] )  |>  
+  group_by(.data[[b_factor]], .data[[w_factor]]) |> 
   
   # remove missing values 
-  filter(!is.na(.data[[cont.var]])) |> 
+  filter(!is.na(.data[[cont_var]])) |> 
   
   # calculate the descriptive stats
   # replace the blanks with the number of digits 
@@ -288,27 +293,12 @@ df.sum <- my.df |>
   # the SD is rounded to 2 significant digits using signif  
   # do not place anything in the empty parentheses in the n() 
   # N represents the sample size within each group
-  summarise(Mean = round(mean(.data[[cont.var]]), digits=0), 
-            SD = signif(sd(.data[[cont.var]]), digits=2),
-            N = n())
+  summarise(Mean = round(mean(.data[[cont_var]]), digits=0), 
+            SD = signif(sd(.data[[cont_var]]), digits=2),
+            N = n()) |> 
+  ungroup()
 
-library(flextable) #helps format a nicer table
-
-#create the formatted table
-ft <- flextable(df.sum,
-                cwidth = 0.75) |>  #can vary cell width as needed
-  
-  #bold the headings
-  bold(part = "header") |> 
-  
-  #center columns
-  align(align = "center", part = "all" )
-
-#print the table
-#right click on the table, choose select all, 
-#choose copy, then paste in your document
-#finish formatting as needed in your document
-ft
+gt(df_sum)
 
 ```
 
@@ -328,23 +318,23 @@ First we will graph all the data on a 2-factor plot
 
 #create 2 factor plot 
 factor2.plot <- ggplot(
-  data = my.df, 
+  data = mydf, 
   aes(
-    y = .data[[cont.var]], 
-    x = .data[[w.factor.var]],
-    group = .data[[subject.ID]])) +
+    y = .data[[cont_var]], 
+    x = .data[[w_factor]],
+    group = .data[[subject_ID]])) +
   geom_point(size = 3, color = "orange", alpha = 0.8) +
   geom_line(color = "grey86") + 
   
   ###this bit of code adds the horizontal bar - use median or mean as needed
   stat_summary(fun = mean, fun.min = mean, fun.max = mean, 
       geom = "crossbar", width = 0.3, linewidth = 0.6,
-      aes(group = '.data[[w.factor.var]]' )) +
+      aes(group = '.data[[w_factor]]' )) +
   
   xlab("Time of Measurement") +
   ylab("SDNN (ms)") +
   theme_classic(base_size=18) +
-  facet_grid(~.data[[b.factor.var]])
+  facet_grid(~.data[[b_factor]])
 factor2.plot
 
 
@@ -367,19 +357,19 @@ For the first inferential test, we will compare the baseline values between the 
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
-response <- cont.var
-predictor <- b.factor.var
+response <- cont_var
+predictor <- b_factor
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
 #computes the effect size using Cohen's d
 
-my.df.base <- my.df  |>  
-  filter(test.period == "Baseline") 
+mydf.base <- mydf  |>  
+  filter(test_period == "Baseline") 
 
 baseline.effectSize.results <- 
   rstatix::cohens_d(
-           data = my.df.base,
+           data = mydf.base,
            formula_object, 
            paired = FALSE,       #TRUE for within-subjects, FALSE for between-subjects
            var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
@@ -424,25 +414,25 @@ Next, we will graph the difference in the within subjects factor which is Time o
 #first we need to change the format of the data from long to wide
 #this way, we will have one row for each subject and can take a difference
 #between the after and before values
-my.df.wide  <- my.df |> 
-  dplyr::select(.data[[subject.ID]], .data[[b.factor.var]], .data[[w.factor.var]], .data[[cont.var]]) |> 
+mydf.wide  <- mydf |> 
+  dplyr::select(.data[[subject_ID]], .data[[b_factor]], .data[[w_factor]], .data[[cont_var]]) |> 
   pivot_wider(
-    names_from = .data[[w.factor.var]],
+    names_from = .data[[w_factor]],
 
-    values_from = .data[[cont.var]]
+    values_from = .data[[cont_var]]
   )
 
 #next, take the difference between the values for each subject
-my.df.diff <- my.df.wide |> 
-  mutate(change.cont.var = Puzzle - Baseline)
+mydf.diff <- mydf.wide |> 
+  mutate(change.cont_var = Puzzle - Baseline)
   
 
 #create difference plot 
 difference.plot <- ggplot(
-  data = my.df.diff, 
+  data = mydf.diff, 
   aes(
-    y = change.cont.var, 
-    x = .data[[b.factor.var]])) +
+    y = change.cont_var, 
+    x = .data[[b_factor]])) +
   geom_point(size = 3, color = "orange", alpha = 0.8) +
 
   ###this bit of code adds the horizontal bar - use median or mean as needed
@@ -478,8 +468,8 @@ This graph shows the difference between the Baseline and Puzzle time periods for
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
-response <- "change.cont.var"
-predictor <- b.factor.var
+response <- "change.cont_var"
+predictor <- b_factor
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
@@ -487,7 +477,7 @@ formula_object <- as.formula(formula_string)
 #computes the effect size using Cohen's d for Welch test
 btw.effectSize.results <- 
   rstatix::cohens_d(
-    data = my.df.diff,           #put the dataframe name here
+    data = mydf.diff,           #put the dataframe name here
     formula_object,      #continuous variable ~ factor 
     paired = FALSE,       #TRUE for within-subjects, FALSE for between-subjects
     var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
@@ -541,11 +531,11 @@ Without splitting by treatment, let's look at the main effect of time of measure
 
 #create 2 factor plot 
 main.time.plot <- ggplot(
-  data = my.df, 
+  data = mydf, 
   aes(
-    y = .data[[cont.var]], 
-    x = .data[[w.factor.var]],
-    group = .data[[subject.ID]])) +
+    y = .data[[cont_var]], 
+    x = .data[[w_factor]],
+    group = .data[[subject_ID]])) +
   geom_point(aes(color = treatment, shape = treatment), 
               size = 3, alpha = 0.9) +
   geom_line(color = "grey86") + 
@@ -553,7 +543,7 @@ main.time.plot <- ggplot(
   ###this bit of code adds the horizontal bar - use median or mean as needed
   stat_summary(fun = mean, fun.min = mean, fun.max = mean, 
       geom = "crossbar", width = 0.2, linewidth = 0.6,
-      aes(group = 'test.period' )) +
+      aes(group = 'test_period' )) +
   
   xlab("Time of Measurement") +
   ylab("SDNN (ms)") +
@@ -581,8 +571,8 @@ This graph shows the main effect of Time of Measurement without splitting by Tre
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
-response <- cont.var
-predictor <- w.factor.var
+response <- cont_var
+predictor <- w_factor
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
@@ -590,7 +580,7 @@ formula_object <- as.formula(formula_string)
 #computes the effect size using Cohen's d for Welch test
 time.effectSize.results <- 
   rstatix::cohens_d(
-    data = my.df,           #put the dataframe name here
+    data = mydf,           #put the dataframe name here
     formula_object,      #continuous variable ~ factor 
     paired = TRUE,       #TRUE for within-subjects, FALSE for between-subjects
     var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
@@ -633,11 +623,11 @@ ggsave(time.effect.plot, filename="results/examples/two-factor/time.effect.plot.
 
 #create 2 factor plot 
 main.trt.plot <- ggplot(
-  data = my.df, 
+  data = mydf, 
   aes(
-    y = .data[[cont.var]], 
-    x = .data[[b.factor.var]])) +
-  geom_point(aes(color = .data[[w.factor.var]], shape = .data[[w.factor.var]]), 
+    y = .data[[cont_var]], 
+    x = .data[[b_factor]])) +
+  geom_point(aes(color = .data[[w_factor]], shape = .data[[w_factor]]), 
               size = 3, alpha = 0.9) +
 
   ###this bit of code adds the horizontal bar - use median or mean as needed
@@ -669,8 +659,8 @@ ggsave(main.trt.plot, filename="results/examples/two-factor/main.trt.plot.png",
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
-response <- cont.var
-predictor <- b.factor.var
+response <- cont_var
+predictor <- b_factor
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
@@ -678,7 +668,7 @@ formula_object <- as.formula(formula_string)
 #computes the effect size using Cohen's d for Welch test
 trt.effectSize.results <- 
   rstatix::cohens_d(
-    data = my.df,           #put the dataframe name here
+    data = mydf,           #put the dataframe name here
     formula_object,      #continuous variable ~ factor 
     paired = FALSE,       #TRUE for within-subjects, FALSE for between-subjects
     var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
@@ -723,17 +713,17 @@ Go to the script_templates folder then select the graphing subfolder followed by
 #first we need to change the format of the data from long to wide
 #this way, we will have one row for each subject and can take a difference
 #between the after and before values
-my.df.wide  <- my.df |> 
-  dplyr::select(.data[[subject.ID]], .data[[b.factor.var]], .data[[w.factor.var]], .data[[cont.var]]) |> 
+mydf.wide  <- mydf |> 
+  dplyr::select(.data[[subject_ID]], .data[[b_factor]], .data[[w_factor]], .data[[cont_var]]) |> 
   pivot_wider(
-    names_from = .data[[w.factor.var]],
+    names_from = .data[[w_factor]],
 
-    values_from = .data[[cont.var]]
+    values_from = .data[[cont_var]]
   )
 
 #next, take the difference between the values for each subject
-my.df.diff <- my.df.wide |> 
-  mutate(change.cont.var = Puzzle - Baseline) |> 
+mydf.diff <- mydf.wide |> 
+  mutate(change.cont_var = Puzzle - Baseline) |> 
   left_join(subjects)
 
 likert_levels <- 1:5
@@ -746,12 +736,12 @@ likert_labels <- c(
   "Very Positive"
 )
 
-my.df.diff$feeling.before <- factor(my.df.diff$feeling.before, 
+mydf.diff$feeling.before <- factor(mydf.diff$feeling.before, 
                         levels = likert_levels, 
                         labels = likert_labels, 
                         ordered = TRUE)
 
-my.df.diff$feeling.after <- factor(my.df.diff$feeling.after,
+mydf.diff$feeling.after <- factor(mydf.diff$feeling.after,
                         levels = likert_levels, 
                         labels = likert_labels, 
                         ordered = TRUE)
@@ -764,21 +754,21 @@ likert_labels2 <- c(
   "Very High"
 )
 
-my.df.diff$energy.before <- factor(my.df.diff$energy.before, 
+mydf.diff$energy.before <- factor(mydf.diff$energy.before, 
                         levels = likert_levels, 
                         labels = likert_labels2, 
                         ordered = TRUE)
 
-my.df.diff$energy.after <- factor(my.df.diff$energy.after, 
+mydf.diff$energy.after <- factor(mydf.diff$energy.after, 
                         levels = likert_levels, 
                         labels = likert_labels2, 
                         ordered = TRUE)
 
-my.df.diff$caffeine.regular <- factor(my.df.diff$caffeine.regular, 
+mydf.diff$caffeine.regular <- factor(mydf.diff$caffeine.regular, 
                           levels = c("No", "Sometimes", "Yes"))
 
 
-my.df.diff <- my.df.diff |>
+mydf.diff <- mydf.diff |>
     set_variable_labels(
       energy.before = "Subject energy level before doing the puzzle",
       energy.after = "Subject energy level after doing the puzzle",
@@ -790,25 +780,25 @@ my.df.diff <- my.df.diff |>
       caffeine.regular = "Do you regularly drink something caffeinated?"
     )
 
-energy.survey <- gglikert(my.df.diff, include = c(energy.before, energy.after),
+energy.survey <- gglikert(mydf.diff, include = c(energy.before, energy.after),
          add_totals = FALSE,
          y_label_wrap = 25,
          facet_rows = vars(treatment))
 energy.survey 
 
-feeling.survey <- gglikert(my.df.diff, include = c(feeling.before, feeling.after),
+feeling.survey <- gglikert(mydf.diff, include = c(feeling.before, feeling.after),
          add_totals = FALSE,
          y_label_wrap = 25,
          facet_rows = vars(treatment))
 feeling.survey
 
-caff.survey <-gglikert(my.df.diff, include = c(caffeine.regular),
+caff.survey <-gglikert(mydf.diff, include = c(caffeine.regular),
          add_totals = FALSE,
          y_label_wrap = 25,
          facet_rows = vars(treatment))
 caff.survey
 
-binary.survey <- gglikert(my.df.diff, include = c(sleep, satiated, like.puzzles),
+binary.survey <- gglikert(mydf.diff, include = c(sleep, satiated, like.puzzles),
          add_totals = FALSE,
          y_label_wrap = 25,
          labels_color = "black",

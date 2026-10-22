@@ -2,7 +2,7 @@ variable,variable_label,variable_type,variable_info,dataset
 subject,Subject,numerical,discrete (positive range),"HRVdata, subjects"
 age,Age (years),numerical,discrete (positive range),subjects
 gender,Gender Identity,categorical,"Female, Nonbinary (2 levels)",subjects
-treatment,Treatment,categorical,"A (unstressed by time pressure), B (stressed by time pressure) (2 levels)",HRVdata
+treatment,Treatment,categorical,"Unstressed (unstressed by time pressure), Time Stressed (stressed by time pressure) (2 levels)",HRVdata
 test_period,Testing Period,categorical,"Baseline, Puzzle (2 levels)",HRVdata
 start_date_time,Date and time of the start of the experiment (yyyy-mm-dd hh:mm:ss),datetime,date and time in year-month-day hours:minutes:seconds,HRVdata
 min_HR,Minimum Heart Rate (bpm),numerical,continuous,HRVdata

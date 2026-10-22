@@ -2,7 +2,7 @@
 
 ### by Marney Pratt
 
-### Last updated on October 13, 2026
+### Last updated on October 22, 2026
 
 This webpage details how to download the Project Data Analysis for Bio 201 set of activities.
 
