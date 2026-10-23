@@ -1,21 +1,21 @@
 #to run this code, make sure the rstatix package is loaded
-#make sure you have also already defined your variables (cont.var & b.factor.var)
+# make sure your variables are already defined using "define_variables.R"
 
 
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
-response <- "change.cont.var"
-predictor <- b.factor.var
+response <- "change_cont_var"
+predictor <- b_factor
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
 
 #computes the effect size using Cohen's d
 #can change the var.equal option for equal or unequal variance as needed
-btw.effectSize.results <- 
+btw_effectSize_results <- 
   rstatix::cohens_d(
-    data = my.df.diff,           #put the dataframe name here
+    data = mydf_diff,           #put the dataframe name here
     formula_object,      #continuous variable ~ factor 
     paired = FALSE,       #TRUE for within-subjects, FALSE for between-subjects
     var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
@@ -24,11 +24,11 @@ btw.effectSize.results <-
     conf.level = 0.95,
     ci.type = "bca",
     nboot = 1000)
-btw.effectSize.results
+btw_effectSize_results
 
 
 #graph the results to make it easier to visualize
-difference.effect.plot <- btw.effectSize.results  |>    
+difference_effect_plot <- btw_effectSize_results  |>    
   ggplot(aes(
     x = .y., 
     y = effsize)) +
@@ -48,4 +48,4 @@ difference.effect.plot <- btw.effectSize.results  |>
   theme(axis.text.x = element_blank()) +
   theme(legend.position = "none")   #controls legend/key
 
-difference.effect.plot
+difference_effect_plot

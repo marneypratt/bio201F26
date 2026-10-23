@@ -1,23 +1,23 @@
 #to run this code, make sure the rstatix package is loaded
-#make sure you have also already defined your variables (cont.var & b.factor.var)
+# make sure your variables are already defined using "define_variables.R"
 
 
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
-response <- cont.var
-predictor <- b.factor.var
+response <- cont_var
+predictor <- b_factor
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
 #computes the effect size using Cohen's d
 #can change the var.equal option for equal or unequal variance as needed
-my.df.base <- my.df  |>  
-  filter(test.period == "Baseline") 
+mydf_base <- mydf  |>  
+  filter(test_period == "Baseline") 
 
-baseline.effectSize.results <- 
+baseline_effectSize_results <- 
   rstatix::cohens_d(
-    data = my.df.base,
+    data = mydf_base,
     formula_object, 
     paired = FALSE,       #TRUE for within-subjects, FALSE for between-subjects
     var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
@@ -27,10 +27,10 @@ baseline.effectSize.results <-
     ci.type = "bca",
     nboot = 1000)
 
-baseline.effectSize.results
+baseline_effectSize_results
 
 #graph the results to make it easier to visualize
-baseline.effect.plot <- baseline.effectSize.results  |>    
+baseline_effect_plot <- baseline_effectSize_results  |>    
   ggplot(aes(
     x = .y., 
     y = effsize)) +
@@ -50,4 +50,4 @@ baseline.effect.plot <- baseline.effectSize.results  |>
   theme(axis.text.x = element_blank()) +
   theme(legend.position = "none")   #controls legend/key
 
-baseline.effect.plot
+baseline_effect_plot

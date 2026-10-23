@@ -1,5 +1,7 @@
 ---
 title: "2 Factor Analysis Example"
+date: today
+date-format: long
 format: 
   html:
     code-overflow: wrap
@@ -26,6 +28,7 @@ library(ggpubr, warn.conflicts = FALSE) #publication ready plots & QQ plots
 library(labelled) #for labeling variables better
 library(ggstats) #for gglikert() to make nice bar graphs for survey questions
 library(gt) #for formatted tables
+library(patchwork) #for joining figures together
 
 ```
 

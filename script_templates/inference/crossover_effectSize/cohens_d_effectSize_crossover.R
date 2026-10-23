@@ -1,21 +1,21 @@
 #to run this code, make sure the rstatix package is loaded
-#make sure you have also already defined your variables (cont.var & b.factor.var)
+# make sure your variables are already defined using "define_variables.R"
 
 
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
-response <- cont.var
-predictor <- w.factor.var
+response <- cont_var
+predictor <- w_factor
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
 #computes the effect size using Cohen's d
 #can change the var.equal option for equal or unequal variance as needed
 
-crossover.effectSize.results <- 
+crossover_effectSize_results <- 
   rstatix::cohens_d(
-    data = my.df,
+    data = mydf,
     formula_object, 
     paired = TRUE,       #TRUE for within-subjects, FALSE for between-subjects
     var.equal = FALSE,   #TRUE for equal variance, FALSE for unequal variance
@@ -25,11 +25,11 @@ crossover.effectSize.results <-
     ci.type = "bca",
     nboot = 1000)
 
-crossover.effectSize.results
+crossover_effectSize_results
 
 
 #graph the results to make it easier to visualize
-crossover.effect.plot <- crossover.effectSize.results  |>    
+crossover_effect_plot <- crossover_effectSize_results  |>    
   ggplot(aes(
     x = .y., 
     y = effsize)) +
@@ -49,4 +49,4 @@ crossover.effect.plot <- crossover.effectSize.results  |>
   theme(axis.text.x = element_blank()) +
   theme(legend.position = "none")   #controls legend/key
 
-crossover.effect.plot
+crossover_effect_plot

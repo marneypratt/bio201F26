@@ -1,7 +1,5 @@
 ---
-title: "projectAnalysis_YourName"
-subtitle: "BIO 201 Project Data Analysis"
-author: "Your Name"
+title: "Crossover Analysis Example"
 date: today
 date-format: long
 format: 
@@ -28,6 +26,7 @@ library(ggpubr, warn.conflicts = FALSE) #publication ready plots & QQ plots
 library(labelled) #for labeling variables better
 library(ggstats) #for gglikert() to make nice bar graphs for survey questions
 library(gt) # formatted tables
+library(patchwork) #for joining figures together
 
 
 ```
@@ -99,14 +98,14 @@ cont_var <- "SDNN"
 
 #define the categorical variable that is your within-subjects factor column name
 #remove this line if you do not have a within-subjects factor
-w.factor.var <- "treatment"
+w_factor <- "treatment"
 
 #define the categorical variable that is your between-subjects factor column name
 ##remove this line if you do not have a between-subjects factor
-b.factor.var <- "sequence"
+b_factor <- "sequence"
 
 #define the name of the column that contains your subject identifiers
-subject.ID <- "subject"
+subject_ID <- "subject"
 
 
 
@@ -133,7 +132,7 @@ Check to see if the continuous dependent variable is normally distributed.
 ggpubr::ggqqplot(
   data = mydf,               #put the data frame name here 
   x = {{ cont_var }},                  #put the continuous variable name here
-  color = {{ w.factor.var }},       #put the within subjects factor here (remove if no factors)
+  color = {{ w_factor }},       #put the within subjects factor here (remove if no factors)
 ) 
 
 
@@ -157,7 +156,7 @@ mydf  |>
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
-  group_by(.data[[w.factor.var]], .data[[b.factor.var]] )  |> 
+  group_by(.data[[w_factor]], .data[[b_factor]] )  |> 
   
   
   rstatix::identify_outliers({{ cont_var }}) 
@@ -186,6 +185,14 @@ If there are no extreme outliers, then delete the code chunk below. If there are
 #   dplyr::filter(subject != ___)
 
 
+# #make a new QQ plot with the extreme outliers removed
+# ggpubr::ggqqplot(
+#   data = mydf,               #put the data frame name here 
+#   x = {{ cont_var }},                  #put the continuous variable name here
+#   color = {{ w_factor }},       #put the within subjects factor here (remove if no factors)
+# ) 
+
+
 ```
 
 
@@ -201,13 +208,13 @@ I recommend starting with the script to give you all the descriptive statistics.
 # the variables included here need to be defined to get this code to run
 
 
-df.sum <- mydf  |>  
+df_sum <- mydf  |>  
   # remove missing values from continuous variables
   filter(!is.na(.data[[cont_var]])) |> 
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
-  group_by(.data[[w.factor.var]])  |> 
+  group_by(.data[[w_factor]])  |> 
   
   # calculate the descriptive stats
   # you don't need to change anything below 
@@ -220,7 +227,7 @@ df.sum <- mydf  |>
             Max = max(.data[[cont_var]]),
             Sample.size = n())
 
-df.sum
+df_sum
 
 
 ```
@@ -241,7 +248,7 @@ mydf |>
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
-  group_by(.data[[w.factor.var]])  |> 
+  group_by(.data[[w_factor]])  |> 
   
   # remove missing values 
   filter(!is.na(.data[[cont_var]])) |> 
@@ -271,7 +278,7 @@ Round the descriptive statistics to the same decimal place as the rounded SD val
 #    rounding to the hundredths place use digits=2
 
 #set the number of digits to round to based on the rules above (this blank should be just a number)
-round.digit <- 1
+round_digit <- 1
 
 
 # replace the blank with the cleaned data frame name 
@@ -281,24 +288,24 @@ mydf  |>
   
   #this groups by a defined set of between and within subjects factors
   #remove factors as needed
-  group_by(.data[[w.factor.var]])  |> 
+  group_by(.data[[w_factor]])  |> 
   
   # calculate the descriptive stats
   # do not place anything in the empty parentheses in the n() 
   summarize(Sample.size = n(),
-            Min = round(min(.data[[cont_var]]), digits=round.digit),
-            Q1 = round(quantile(.data[[cont_var]], .25), digits=round.digit),
-            Median = round(median(.data[[cont_var]]), digits=round.digit),
-            Q3 = round(quantile(.data[[cont_var]], .75), digits=round.digit),
-            Max = round(max(.data[[cont_var]]), digits=round.digit),
-            Mean = round(mean(.data[[cont_var]]), digits=round.digit),              
+            Min = round(min(.data[[cont_var]]), digits=round_digit),
+            Q1 = round(quantile(.data[[cont_var]], .25), digits=round_digit),
+            Median = round(median(.data[[cont_var]]), digits=round_digit),
+            Q3 = round(quantile(.data[[cont_var]], .75), digits=round_digit),
+            Max = round(max(.data[[cont_var]]), digits=round_digit),
+            Mean = round(mean(.data[[cont_var]]), digits=round_digit),              
             SD = signif(sd(.data[[cont_var]]), digits=2))
 
 
 ```
 
 
-If you decide you want a formatted table of a subset of the descriptive statistics, then load the `flextable` package in the setup code chunk at the start of this Quarto file and then add a code chunk to make the desired formatted table below.
+If you decide you want a formatted table of a subset of the descriptive statistics, then load the `gt` package in the setup code chunk at the start of this Quarto file and then add a code chunk to make the desired formatted table below.
 
 
 
@@ -317,19 +324,19 @@ Let's graph the HRV variable.
 
 #make the plot
 
-line.plot <- ggplot(
+line_plot <- ggplot(
   data = mydf, 
   aes(
     y = .data[[cont_var]], 
-    x = .data[[w.factor.var]],
-    group = .data[[subject.ID]])) +
+    x = .data[[w_factor]],
+    group = .data[[subject_ID]])) +
   geom_point(size = 2, color = "orange", alpha = 0.8) +
   geom_line(color = "grey86") + 
   
   ###this bit of code adds the horizontal bar - use median or mean as needed
   stat_summary(fun = mean, fun.min = mean, fun.max = mean, 
                geom = "crossbar", width = 0.2, linewidth = 0.6,
-               aes(group = '.data[[w.factor.var]]' )) +
+               aes(group = '.data[[w_factor]]' )) +
   
   #nicer labels for axis labels (not needed here because using column labels)
   #xlab("___") +  #within subjects factor label
@@ -337,11 +344,11 @@ line.plot <- ggplot(
 
   theme_classic(base_size=14) 
 
-line.plot
+line_plot
 
 # save the graph! (.png or .jpg file types are recommended)
 ggsave(filename = "results/examples/crossover/HRVgraph.png",  
-       plot = line.plot,   #put the object name of your plot here
+       plot = line_plot,   #put the object name of your plot here
        height = 5, width = 7, units = "in", 
        dpi = 300)
 
@@ -371,21 +378,21 @@ Select the correct effect size from the script templates based on your data. You
 #| label: effect size
 
 #to run this code, make sure the rstatix package is loaded
-#make sure you have also already defined your variables (cont_var & b.factor.var)
+#make sure you have also already defined your variables (cont_var & b_factor)
 
 
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk
 response <- cont_var
-predictor <- w.factor.var
+predictor <- w_factor
 formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
 #computes the effect size using Cohen's d
 #can change the var.equal option for equal or unequal variance as needed
 
-crossover.effectSize.results <- 
+crossover_effectSize_results <- 
   rstatix::cohens_d(
     data = mydf,
     formula_object, 
@@ -397,11 +404,11 @@ crossover.effectSize.results <-
     ci.type = "bca",
     nboot = 1000)
 
-crossover.effectSize.results
+crossover_effectSize_results
 
 
 #graph the results to make it easier to visualize
-crossover.effect.plot <- crossover.effectSize.results  |>    
+crossover_effect_plot <- crossover_effectSize_results  |>    
   ggplot(aes(
     x = .y., 
     y = -effsize)) +
@@ -421,12 +428,12 @@ crossover.effect.plot <- crossover.effectSize.results  |>
   theme(axis.text.x = element_blank()) +
   theme(legend.position = "none")   #controls legend/key
 
-crossover.effect.plot
+crossover_effect_plot
 
 
 # save the graph (.png or .jpg file types are recommended)
-ggsave(filename = "results/examples/crossover/crossover.effect.plot.png",    #give your graph a name you will remember
-       plot = crossover.effect.plot,   #put the object name of your effect size graph here
+ggsave(filename = "results/examples/crossover/crossover_effect_plot.png",    #give your graph a name you will remember
+       plot = crossover_effect_plot,   #put the object name of your effect size graph here
        height = 5, width = 3, units = "in", 
        dpi = 300)
 
@@ -453,17 +460,17 @@ Go to the script_templates folder then select the graphing subfolder followed by
 #first we need to change the format of the data from long to wide
 #this way, we will have one row for each subject and can take a difference
 #between the after and before values
-mydf.wide  <- mydf |> 
-  dplyr::select(.data[[subject.ID]], .data[[b.factor.var]], .data[[w.factor.var]], .data[[cont_var]]) |> 
+mydf_wide  <- mydf |> 
+  dplyr::select(.data[[subject_ID]], .data[[b_factor]], .data[[w_factor]], .data[[cont_var]]) |> 
   pivot_wider(
-    names_from = .data[[w.factor.var]],
+    names_from = .data[[w_factor]],
 
     values_from = .data[[cont_var]]
   )
 
 #next, take the difference between the values for each subject
-mydf.diff <- mydf.wide |> 
-  mutate(change.cont_var = Nature - Scrolling) |> 
+mydf_diff <- mydf_wide |> 
+  mutate(change_cont_var = Nature - Scrolling) |> 
   left_join(subjects)
 
 likert_levels <- 1:5
@@ -476,7 +483,7 @@ likert_labels <- c(
   "Very Positive"
 )
 
-mydf.diff$feeling <- factor(mydf.diff$feeling, 
+mydf_diff$feeling <- factor(mydf_diff$feeling, 
                         levels = likert_levels, 
                         labels = likert_labels, 
                         ordered = TRUE)
@@ -490,72 +497,72 @@ likert_labels2 <- c(
   "Very High"
 )
 
-mydf.diff$energy <- factor(mydf.diff$energy, 
+mydf_diff$energy <- factor(mydf_diff$energy, 
                         levels = likert_levels, 
                         labels = likert_labels2, 
                         ordered = TRUE)
 
 
-mydf.diff$caffeine.regular <- factor(mydf.diff$caffeine.regular, 
+mydf_diff$caffeine_regular <- factor(mydf_diff$caffeine_regular, 
                           levels = c("No", "Sometimes", "Yes"))
 
 
-mydf.diff <- mydf.diff |>
+mydf_diff <- mydf_diff |>
     set_variable_labels(
       energy = "Subject energy level before the experiment",
       feeling = "How subjects felt before the experiment",
       sleep = "Do you generally get enough sleep?", 
       satiated = "Have you had enough to eat today?", 
-      like.nature = "Do you like spending time in nature?",
-      caffeine.regular = "Do you regularly drink something caffeinated?"
+      like_nature = "Do you like spending time in nature?",
+      caffeine_regular = "Do you regularly drink something caffeinated?"
     )
 
-energy.survey <- gglikert(mydf.diff, include = c(energy),
+energy_survey <- gglikert(mydf_diff, include = c(energy),
          add_totals = FALSE,
          y_label_wrap = 25)
-energy.survey 
+energy_survey 
 
-feeling.survey <- gglikert(mydf.diff, include = c(feeling),
+feeling_survey <- gglikert(mydf_diff, include = c(feeling),
          add_totals = FALSE,
          y_label_wrap = 25)
-feeling.survey
+feeling_survey
 
-caff.survey <-gglikert(mydf.diff, include = c(caffeine.regular),
+caff_survey <-gglikert(mydf_diff, include = c(caffeine_regular),
          add_totals = FALSE,
          y_label_wrap = 25)
-caff.survey
+caff_survey
 
-binary.survey <- gglikert(mydf.diff, include = c(sleep, satiated, like.nature),
+binary_survey <- gglikert(mydf_diff, include = c(sleep, satiated, like_nature),
          add_totals = FALSE,
          y_label_wrap = 25,
          labels_color = "black") +
   scale_fill_manual(values = c("#C8B0D9", "#7DBA8A"))
 
-binary.survey
+binary_survey
 
 
 
 # save the graph (.png or .jpg file types are recommended)
-ggsave(filename="results/examples/crossover/cross.energy.survey.png", 
-       plot = energy.survey,   #put the object name of your survey bar graph here
+ggsave(filename="results/examples/crossover/cross.energy_survey.png", 
+       plot = energy_survey,   #put the object name of your survey bar graph here
        height = 1.5, width = 6, units = "in", 
        dpi = 300)
 
 # save the graph (.png or .jpg file types are recommended)
-ggsave(filename="results/examples/crossover/cross.feeling.survey.png", 
-       plot = feeling.survey,   #put the object name of your survey bar graph here
+ggsave(filename="results/examples/crossover/cross.feeling_survey.png", 
+       plot = feeling_survey,   #put the object name of your survey bar graph here
        height = 1.5, width = 6, units = "in", 
        dpi = 300)
 
 # save the graph (.png or .jpg file types are recommended)
-ggsave(filename="results/examples/crossover/cross.caff.survey.png", 
-       plot = caff.survey,   #put the object name of your survey bar graph here
+ggsave(filename="results/examples/crossover/cross.caff_survey.png", 
+       plot = caff_survey,   #put the object name of your survey bar graph here
        height = 1.5, width = 6, units = "in", 
        dpi = 300)
 
 # save the graph (.png or .jpg file types are recommended)
-ggsave(filename="results/examples/crossover/cross.binary.survey.png", 
-       plot = binary.survey,   #put the object name of your survey bar graph here
+ggsave(filename="results/examples/crossover/cross.binary_survey.png", 
+       plot = binary_survey,   #put the object name of your survey bar graph here
        height = 2.5, width = 6, units = "in", 
        dpi = 300)
 

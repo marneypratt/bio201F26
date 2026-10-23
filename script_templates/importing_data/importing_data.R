@@ -4,20 +4,20 @@
 
 #replace the blank below with the name of your HRV data
 #make sure that you put the .csv file into data folder
-my.df <- read_csv("data/___.csv",
+mydf <- read_csv("data/___.csv",
                   show_col_types = FALSE)
 
 #Change independent categorical variables to factors
-#replace the blanks after my.df$ with the column name of the 
+#replace the blanks after mydf$ with the column name of the 
 #independent categorical variable 
 #(make sure to use the same column name on the same line)
 #replace the blanks in quotes with the levels within each column
 #make sure you put the levels in the right order 
 #for example 
-#my.df$time.measured <- factor(my.df$time.measured, levels = c("Before", "After"))
-my.df$___ <- factor(my.df$___, 
+#mydf$time_measured <- factor(mydf$time_measured, levels = c("Before", "After"))
+mydf$___ <- factor(mydf$___, 
                     levels = c("___", "___"))
-my.df$___ <- factor(my.df$___, 
+mydf$___ <- factor(mydf$___, 
                     levels = c("___", "___"))
 
 #replace the blank below with the name of your subjects data
@@ -36,7 +36,7 @@ variable_labels <- metadata |>
   deframe()
 
 #add labels to data
-my.df <- my.df |> 
+mydf <- mydf |> 
   left_join(subjects) |> 
   set_variable_labels(!!!variable_labels)
 
