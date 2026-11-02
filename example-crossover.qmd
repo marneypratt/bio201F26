@@ -346,11 +346,7 @@ line_plot <- ggplot(
 
 line_plot
 
-# save the graph! (.png or .jpg file types are recommended)
-ggsave(filename = "results/examples/crossover/HRVgraph.png",  
-       plot = line_plot,   #put the object name of your plot here
-       height = 5, width = 7, units = "in", 
-       dpi = 300)
+
 
 ```
 
@@ -425,17 +421,16 @@ crossover_effect_plot <- crossover_effectSize_results  |>
   
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
-  theme(axis.text.x = element_blank()) +
-  theme(legend.position = "none")   #controls legend/key
+
+  theme(legend.position = "none") +  #controls legend/key
+    theme(
+    axis.title.x = element_blank(), # Removes the x-axis title 
+    axis.text.x  = element_blank(), # Removes the x-axis text/labels 
+    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
+  )   #controls legend/key
 
 crossover_effect_plot
 
-
-# save the graph (.png or .jpg file types are recommended)
-ggsave(filename = "results/examples/crossover/crossover_effect_plot.png",    #give your graph a name you will remember
-       plot = crossover_effect_plot,   #put the object name of your effect size graph here
-       height = 5, width = 3, units = "in", 
-       dpi = 300)
 
 ```
 
@@ -444,6 +439,26 @@ Remember to look at the magnitude of the effect (scroll all the way to the right
 We also made a graph that shows the effect size results visually. In this case, the point represents the value of the effect size that you chose (Cohen's d, Cohen's d for Welch test, or the Wilcoxon paired signed-rank test) and the vertical lines represent the 95% confidence interval calculated using the adjusted bootstrap percentile (BCa) method.
 
 If the 95% CI includes zero (shown by crossing over the dotted line), then that effect size is not significantly different from zero (meaning there is no evidence of an effect). 
+
+
+The code chunk below will make a combo plot and save it
+
+```{r}
+#| label: combo graph for treatment main effect
+
+# put the object name of your HRV graph in the first blank below
+# put the object name of your effect size plot in the second blank below
+treatment_plot <- line_plot + crossover_effect_plot +
+  plot_layout(widths = c(3, 1))
+
+treatment_plot 
+
+
+ggsave(treatment_plot, filename="results/examples/two-factor/treatment_plot.png",  
+       height = 5, width = 8, units = "in", 
+       dpi = 300)
+
+```
 
 
 ## Survey Results

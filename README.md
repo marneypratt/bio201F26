@@ -2,7 +2,7 @@
 
 ### by Marney Pratt
 
-### Last updated on October 22, 2026
+### Last updated November 2026
 
 This webpage details how to download the Project Data Analysis for Bio 201 set of activities.
 
@@ -39,6 +39,7 @@ If you are working on your desktop, make sure you have the following packages in
 * `gt`
 * `patchwork`
 * `rstatix`
+* `coin`
 * `ggpubr`
 * `labelled`
 * `ggstats`

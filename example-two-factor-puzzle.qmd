@@ -338,11 +338,6 @@ factor2_plot <- ggplot(
 factor2_plot
 
 
-ggsave(factor2_plot, filename="results/examples/two-factor/factor2_plot.png",  
-       height = 5, width = 8, units = "in", 
-       dpi = 300)
-
-
 ```
 The graph shows the data points connected by lines for each subject as well as the mean value for each treatment given as the thick horizontal bar (make sure to change the mean to a median if your data is not normally distributed)
 
@@ -395,13 +390,40 @@ baseline_effect_plot <- baseline_effectSize_results  |>
   ylab("Standardized Effect Size") +
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
-  theme(axis.text.x = element_blank()) +
-  theme(legend.position = "none")   #controls legend/key
+
+  theme(legend.position = "none") +  #controls legend/key
+    theme(
+    axis.title.x = element_blank(), # Removes the x-axis title 
+    axis.text.x  = element_blank(), # Removes the x-axis text/labels 
+    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
+  )
 
 baseline_effect_plot
   
 ```
 Remember to look at the magnitude of the effect (scroll all the way to the right or click on baseline_effectSize_results in the Environment) and record the effect size (effsize) and the 95% CI (conf.low and conf.high). If the 95% CI includes zero, then the effect is not significantly different from zero (which is what we predicted for the two groups at baseline).
+
+
+## Join Original Graph and Effect Size Results
+
+Now let's make one image that joins your original graph with the effect size results graph together.
+
+```{r}
+#| label: data plus effect size graph
+
+# put the object name of your HRV graph in the first blank below
+# put the object name of your effect size plot in the second blank below
+interaction_plot <- factor2_plot + baseline_effect_plot +
+  plot_layout(widths = c(3, 1))
+
+interaction_plot 
+
+
+ggsave(interaction_plot, filename="results/examples/two-factor/factor2_plot.png",  
+       height = 5, width = 8, units = "in", 
+       dpi = 300)
+
+```
 
 ### Between Subjects Difference Plot
 
@@ -450,11 +472,6 @@ difference_plot <- ggplot(
 
 difference_plot
 
-
-ggsave(difference_plot, filename="results/examples/two-factor/difference_plot.png",  
-       height = 5, width = 4, units = "in", 
-       dpi = 300)
-
 ```
 
 This graph shows the difference between the Baseline and Puzzle time periods for subjects separated by treatment (time stressed or unstressed) with each point representing the difference for a subject and the horizontal bar is the mean for each treatment.
@@ -502,15 +519,16 @@ effect_plot <- btw_effectSize_results  |>
   ylab("Standardized Effect Size") +
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
-  theme(axis.text.x = element_blank()) +
-  theme(legend.position = "none")   #controls legend/key
+
+  theme(legend.position = "none") +  #controls legend/key
+    theme(
+    axis.title.x = element_blank(), # Removes the x-axis title 
+    axis.text.x  = element_blank(), # Removes the x-axis text/labels 
+    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
+  )   #controls legend/key
 
 effect_plot
 
-
-ggsave(effect_plot, filename="results/examples/two-factor/effect_plot.png",  
-       height = 5, width = 3, units = "in", 
-       dpi = 300)
 
 ```
 
@@ -519,6 +537,25 @@ Remember to look at the magnitude of the effect (scroll all the way to the right
 We also made a graph that shows the effect size results visually. In this case, the point represents the value of the effect size that you chose (Cohen's d, Cohen's d for Welch test, or the Wilcoxon paired signed-rank test) and the vertical lines represent the 95% confidence interval calculated using the adjusted bootstrap percentile (BCa) method.
 
 If the 95% CI includes zero (shown by crossing over the dotted line), then that effect size is not significantly different from zero (meaning there is no evidence of an effect). Does the vertical blue line touch or cross the dotted zero line?
+
+The code chunk below will make a combo plot and save it
+
+```{r}
+#| label: combo graph for interaction difference
+
+# put the object name of your HRV graph in the first blank below
+# put the object name of your effect size plot in the second blank below
+interaction_difference_plot <- difference_plot + effect_plot +
+  plot_layout(widths = c(3, 1))
+
+interaction_difference_plot 
+
+
+ggsave(interaction_difference_plot, filename="results/examples/two-factor/interaction_difference_plot.png",  
+       height = 5, width = 8, units = "in", 
+       dpi = 300)
+
+```
 
 ### Main Effects
 
@@ -556,10 +593,6 @@ main_time_plot <- ggplot(
   
 main_time_plot
 
-
-ggsave(main_time_plot, filename="results/examples/two-factor/main_time_plot.png",  
-       height = 5, width = 5, units = "in", 
-       dpi = 300)
 
 ```
 This graph shows the main effect of Time of Measurement without splitting by Treatment (while the points for each treatment are given a different color or shape, the means are for both treatments together within each time period).
@@ -606,13 +639,34 @@ time_effect_plot <- time_effectSize_results  |>
   ylab("Standardized Effect Size") +
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
-  theme(axis.text.x = element_blank()) +
-  theme(legend.position = "none")   #controls legend/key
+
+  theme(legend.position = "none") +  #controls legend/key
+    theme(
+    axis.title.x = element_blank(), # Removes the x-axis title 
+    axis.text.x  = element_blank(), # Removes the x-axis text/labels 
+    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
+  )   #controls legend/key
+
 
 time_effect_plot
 
-ggsave(time_effect_plot, filename="results/examples/two-factor/time_effect_plot.png", 
-       height = 5, width = 3, units = "in", 
+```
+
+The code chunk below will make a combo plot and save it
+
+```{r}
+#| label: combo graph for time main effect
+
+# put the object name of your HRV graph in the first blank below
+# put the object name of your effect size plot in the second blank below
+time_plot <- main_time_plot + time_effect_plot +
+  plot_layout(widths = c(3, 1))
+
+time_plot 
+
+
+ggsave(time_plot, filename="results/examples/two-factor/time_plot.png",  
+       height = 5, width = 8, units = "in", 
        dpi = 300)
 
 ```
@@ -645,10 +699,6 @@ main_trt_plot <- ggplot(
   
 main_trt_plot
 
-
-ggsave(main_trt_plot, filename="results/examples/two-factor/main_trt_plot.png",  
-       height = 5, width = 5, units = "in", 
-       dpi = 300)
 
 ```
 
@@ -694,12 +744,37 @@ trt_effect_plot <- trt_effectSize_results  |>
   ylab("Standardized Effect Size") +
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
-  theme(axis.text.x = element_blank()) +
-  theme(legend.position = "none")   #controls legend/key
 
+  theme(legend.position = "none") +  #controls legend/key
+    theme(
+    axis.title.x = element_blank(), # Removes the x-axis title 
+    axis.text.x  = element_blank(), # Removes the x-axis text/labels 
+    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
+  )   #controls legend/key
 trt_effect_plot
 
 ```
+
+
+The code chunk below will make a combo plot and save it
+
+```{r}
+#| label: combo graph for treatment main effect
+
+# put the object name of your HRV graph in the first blank below
+# put the object name of your effect size plot in the second blank below
+treatment_plot <- main_trt_plot + time_effect_plot +
+  plot_layout(widths = c(3, 1))
+
+treatment_plot 
+
+
+ggsave(treatment_plot, filename="results/examples/two-factor/treatment_plot.png",  
+       height = 5, width = 8, units = "in", 
+       dpi = 300)
+
+```
+
 
 ## Survey Results
 

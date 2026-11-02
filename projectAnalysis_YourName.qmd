@@ -52,12 +52,12 @@ mydf <- read_csv("data/___.csv",
 
 #Change independent categorical variables to factors
 #replace the blanks after mydf$ with the column name of the 
-#independent categorical variable 
+#independent categorical variable(s) 
 #(make sure to use the same column name on the same line)
 #replace the blanks in quotes with the levels within each column
 #make sure you put the levels in the right order 
 #for example 
-#mydf$time.measured <- factor(mydf$time.measured, levels = c("Before", "After"))
+#mydf$time_measured <- factor(mydf$time_measured, levels = c("Before", "After"))
 mydf$___ <- factor(mydf$___, 
                     levels = c("___", "___"))
 mydf$___ <- factor(mydf$___, 
@@ -152,7 +152,7 @@ The result above shows how many rows (if any) contain outliers. If it says 0 row
 
 You may want to click on the little "Show in new window" icon at the top right of the results to see the whole table of results more easily. Either way, make sure you fully scroll to the right to see the last column in the results labeled "is.extreme". If there are any extreme outliers, you may want to filter those subjects out and rerun the descriptive statistics. 
 
-If there are no extreme outliers, then delete the code chunk below. If there are outliers that you remove, you must note that you removed them and why in your results (you might want to look at the information about the subject to see if you can see why they were an outlier or make sure you wrote the values down correctly in the original spreadsheet). You may want to run the analysis with and without the outlier(s) so see how they impact the results.
+If there are no extreme outliers, then delete the code chunk below. If there are outliers that you remove, you must note that you removed them and why in your results (you might want to look at the information about the subject and your observations during data collection to see if you can see why they were an outlier or make sure you wrote the values down correctly in the original spreadsheet). You may want to run the analysis with and without the outlier(s) so see how they impact the results.
 
 ```{r}
 #| label: remove outliers
@@ -166,6 +166,9 @@ If there are no extreme outliers, then delete the code chunk below. If there are
 
 df <- df |> 
   dplyr::filter(subject != ___)
+
+
+#regraph your QQ plot below now that your outlier(s) are removed
 
 
 ```
@@ -220,12 +223,6 @@ Let's graph the HRV variable.
 
 
 
-# save the graph! (.png or .jpg file types are recommended)
-ggsave(filename = "results/HRVgraph.png",  
-       plot = ___,   #put the object name of your plot here
-       height = 5, width = 8, units = "in", 
-       dpi = 300)
-
 ```
 
 Make sure you have included proper axis titles that include units where needed. Make sure to also use the correct measure of central tendency (mean if data are normal, median if data are not normal). You can change the stat_summary code above from mean to median as needed.
@@ -258,11 +255,6 @@ Select the correct effect size from the script templerates based on your data. S
 
 
 
-# save the graph (.png or .jpg file types are recommended)
-ggsave(filename = "results/____.png",    #give your graph a name you will remember
-       plot = ___,   #put the object name of your effect size graph here
-       height = 5, width = 3, units = "in", 
-       dpi = 300)
 
 ```
 
@@ -271,6 +263,42 @@ Remember to look at the magnitude of the effect (scroll all the way to the right
 We also made a graph that shows the effect size results visually. In this case, the point represents the value of the effect size that you chose (Cohen's d, Cohen's d for Welch test, or the Wilcoxon paired signed-rank test) and the vertical lines represent the 95% confidence interval calculated using the adjusted bootstrap percentile (BCa) method.
 
 If the 95% CI includes zero (shown by crossing over the dotted line), then that effect size is not significantly different from zero (meaning there is no evidence of an effect). 
+
+
+## Join Original Graph and Effect Size Results
+
+Now let's make one image that joins your original graph with the effect size results graph together.
+
+```{r}
+#| label: data plus effect size graph
+
+# put the object name of your HRV graph in the first blank below
+# put the object name of your effect size plot in the second blank below
+patch.plot <- ___ + ___ +
+  plot_layout(widths = c(3, 1))
+
+patch.plot 
+
+```
+
+
+
+
+Let's use `ggsave()` again to save a copy of the effect size graph.
+
+```{r}
+#| label: Save your graph 
+#| eval: false  
+
+# save the graph
+# recommended to use.png or .jpg file types
+ggsave(filename = "results/___.png",     # give your graph file a name
+       plot = patch.plot,   #put the object name of your plot here
+       height = 4.5, width = 8, units = "in", 
+       dpi = 300)
+```
+
+
 
 
 ## Survey Results
