@@ -61,9 +61,6 @@ mydf$test_period <- factor(mydf$test_period,
 mydf$treatment <- factor(mydf$treatment, 
                           levels = c("Unstressed", "Time Stressed"))
 
-# Modify factor levels
-levels(mydf$treatment) <- c("Unstressed", "Time Stressed")
-
 subjects <- read_csv("data/example-data/puzzle/subjects.csv")
 
 metadata <- read_csv("data/example-data/puzzle/variable_metadata.csv")
@@ -770,7 +767,7 @@ The code chunk below will make a combo plot and save it
 
 # put the object name of your HRV graph in the first blank below
 # put the object name of your effect size plot in the second blank below
-treatment_plot <- main_trt_plot + time_effect_plot +
+treatment_plot <- main_trt_plot + trt_effect_plot +
   plot_layout(widths = c(3, 1))
 
 treatment_plot 
