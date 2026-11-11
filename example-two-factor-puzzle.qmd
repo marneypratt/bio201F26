@@ -257,17 +257,17 @@ If an outlier is extreme, you may decide to run the analysis with and without th
 #fill in the blank with the number of the subject you want to remove
 #remove the hashtags in front of the code below
 
-mydf <- mydf |>
-  dplyr::filter(subject != 6)
-
-
-#make a QQ plot for each dependent variable that is continuous
-ggpubr::ggqqplot(
-  data = mydf,               #put the data frame name here 
-  x = {{ cont_var }},                  #put the continuous variable name here
-  color = {{ b_factor }},       #put the between subjects factor here (remove if no factors)
-  facet.by = {{ w_factor }}  #put the within subjects factors here (remove if no factors)
-  ) 
+# mydf <- mydf |>
+#   dplyr::filter(subject != 8)
+# 
+# 
+# #make a QQ plot for each dependent variable that is continuous
+# ggpubr::ggqqplot(
+#   data = mydf,               #put the data frame name here 
+#   x = {{ cont_var }},                  #put the continuous variable name here
+#   color = {{ b_factor }},       #put the between subjects factor here (remove if no factors)
+#   facet.by = {{ w_factor }}  #put the within subjects factors here (remove if no factors)
+#   ) 
 
 ```
 
@@ -388,6 +388,7 @@ baseline_effect_plot <- baseline_effectSize_results  |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
   xlab("Unstressed - Time Stressed") +
   ylab("Standardized Effect Size") +
+  labs(subtitle = "Baseline Comparison") +
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
 
@@ -395,7 +396,8 @@ baseline_effect_plot <- baseline_effectSize_results  |>
     theme(
     axis.title.x = element_blank(), # Removes the x-axis title 
     axis.text.x  = element_blank(), # Removes the x-axis text/labels 
-    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
+    axis.ticks.x = element_blank(),  # Removes the x-axis tick lines
+    plot.subtitle = element_text(size = 10)  #reduces font size of subtitle
   )
 
 baseline_effect_plot
@@ -517,6 +519,7 @@ effect_plot <- btw_effectSize_results  |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
   xlab("Unstressed - Time Stressed") +
   ylab("Standardized Effect Size") +
+  labs(subtitle = "Interaction Comparison") +
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
 
@@ -524,8 +527,9 @@ effect_plot <- btw_effectSize_results  |>
     theme(
     axis.title.x = element_blank(), # Removes the x-axis title 
     axis.text.x  = element_blank(), # Removes the x-axis text/labels 
-    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
-  )   #controls legend/key
+    axis.ticks.x = element_blank(),  # Removes the x-axis tick lines
+    plot.subtitle = element_text(size = 10)  #reduces font size of subtitle
+  )
 
 effect_plot
 
@@ -637,6 +641,7 @@ time_effect_plot <- time_effectSize_results  |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
   xlab("Baseline - Puzzle") +
   ylab("Standardized Effect Size") +
+   labs(subtitle = "Time Comparison") +
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
 
@@ -644,9 +649,9 @@ time_effect_plot <- time_effectSize_results  |>
     theme(
     axis.title.x = element_blank(), # Removes the x-axis title 
     axis.text.x  = element_blank(), # Removes the x-axis text/labels 
-    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
-  )   #controls legend/key
-
+    axis.ticks.x = element_blank(),  # Removes the x-axis tick lines
+    plot.subtitle = element_text(size = 10)  #reduces font size of subtitle
+  )
 
 time_effect_plot
 
@@ -742,6 +747,7 @@ trt_effect_plot <- trt_effectSize_results  |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
   xlab("Time Stressed - Unstressed") +
   ylab("Standardized Effect Size") +
+  labs(subtitle = "Treatment Comparison") +
   #additional formatting
   theme_classic(base_size = 14)  +  #sets the font size
 
@@ -749,8 +755,9 @@ trt_effect_plot <- trt_effectSize_results  |>
     theme(
     axis.title.x = element_blank(), # Removes the x-axis title 
     axis.text.x  = element_blank(), # Removes the x-axis text/labels 
-    axis.ticks.x = element_blank()  # Removes the x-axis tick lines
-  )   #controls legend/key
+    axis.ticks.x = element_blank(),  # Removes the x-axis tick lines
+    plot.subtitle = element_text(size = 10)  #reduces font size of subtitle
+  )
 trt_effect_plot
 
 ```
