@@ -38,7 +38,7 @@ time_effect_plot <- time_effectSize_results  |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
  
    #nicer axis labels
-  xlab("Difference Between Times") +
+  xlab("Main Effect of Time") +
   ylab("Standardized Effect Size") +
   
   

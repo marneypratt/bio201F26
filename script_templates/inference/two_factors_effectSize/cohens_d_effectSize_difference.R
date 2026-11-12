@@ -59,7 +59,7 @@ difference_effect_plot <- btw_effectSize_results  |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
   
   #axis labels
-  xlab("Difference Between Treatments") +
+  xlab("Interaction Comparison") +
   ylab("Standardized Effect Size") +
   
   #additional formatting

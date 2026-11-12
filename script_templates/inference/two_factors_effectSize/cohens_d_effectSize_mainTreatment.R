@@ -39,7 +39,7 @@ trt_effect_plot <- trt_effectSize_results  |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
  
   #nicer axis labels
-  xlab("Difference Between Treatments") +
+  xlab("Main Effect of Treatment") +
   ylab("Standardized Effect Size") +
   
   

@@ -42,7 +42,7 @@ baseline_effect_plot <- baseline_effectSize_results  |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") + # Add a reference line at 0
   
   #nicer axis labels
-  xlab("Difference Between Groups") +
+  xlab("Baseline Comparison") +
   ylab("Standardized Effect Size") +
   
   #additional formatting
