@@ -2,6 +2,25 @@
 # make sure your variables are already defined using "define_variables.R"
 
 
+#first we need to change the format of the data from long to wide
+#this way, we will have one row for each subject and can take a difference
+#between the after and before values
+mydf_wide  <- mydf |> 
+  dplyr::select(.data[[subject_ID]], .data[[b_factor]], .data[[w_factor]], .data[[cont_var]]) |> 
+  pivot_wider(
+    names_from = .data[[w_factor]],
+    
+    values_from = .data[[cont.var]]
+  )
+
+#next, take the difference between the values for each subject
+mydf_diff <- mydf_wide |> 
+  
+  #put the name of the categories you are subracting for each subject in 
+  #the two blanks below (For example After - Before)
+  mutate(change_cont_var = ___ - ___)
+
+
 #set the formula to use the defined variables 
 #this makes it easier to change the variables at the top and rerun everything 
 #without having to retype the variables in every code chunk

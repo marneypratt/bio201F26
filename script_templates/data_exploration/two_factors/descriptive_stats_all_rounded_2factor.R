@@ -14,7 +14,6 @@
 round_digit <- ___
 
 
-# replace the blank with the cleaned data frame name 
 mydf  |>  
   # remove missing values from continuous variables
   filter(!is.na(.data[[cont_var]])) |> 

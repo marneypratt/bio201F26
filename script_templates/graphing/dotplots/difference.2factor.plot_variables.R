@@ -5,7 +5,7 @@
 
 #first we need to change the format of the data from long to wide
 #this way, we will have one row for each subject and can take a difference
-#between the after and before values
+#between the values from the two measurement times within subjects
 mydf_wide  <- mydf |> 
   dplyr::select(.data[[subject_ID]], .data[[b_factor]], .data[[w_factor]], .data[[cont_var]]) |> 
   pivot_wider(
@@ -17,7 +17,7 @@ mydf_wide  <- mydf |>
 #next, take the difference between the values for each subject
 mydf_diff <- mydf_wide |> 
   
-  #put the name of the categories you are subracting for each subject in 
+  #put the name of the categories you are subtracting for each subject in 
   #the two blanks below (For example After - Before)
   mutate(change_cont_var = ___ - ___)
 

@@ -29,6 +29,7 @@ library(rstatix, warn.conflicts = FALSE) #pipe friendly framework for basic stat
 library(ggpubr, warn.conflicts = FALSE) #publication ready plots & QQ plots
 library(labelled) #for labeling variables better
 library(ggstats) #for gglikert() to make nice bar graphs for survey questions
+library(patchwork) #for combining graphs
 
 
 ```
@@ -164,7 +165,7 @@ If there are no extreme outliers, then delete the code chunk below. If there are
 #dplyr::filter(subject != ___, subject != ___)
 
 
-df <- df |> 
+mydf <- mydf |> 
   dplyr::filter(subject != ___)
 
 
@@ -205,7 +206,7 @@ Round the descriptive statistics to the same decimal place as the rounded SD val
 ```
 
 
-If you decide you want a formatted table of a subset of the descriptive statistics, then load the `flextable` package in the setup code chunk at the start of this Quarto file and then add a code chunk to make the desired formatted table below.
+If you decide you want a formatted table of a subset of the descriptive statistics, then load the `gt` package in the setup code chunk at the start of this Quarto file and then add a code chunk to make the desired formatted table below.
 
 
 
