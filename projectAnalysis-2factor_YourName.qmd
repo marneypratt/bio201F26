@@ -119,6 +119,8 @@ subject_ID <- "___"
 
 ## Data Exploration
 
+For this section, tweak the code provided or use the codes in the script_templates folder and then data_exploration subfolder for the necessary script templates. 
+
 ### QQ Plots to Assess Normality
 
 Check to see if the continuous dependent variable is normally distributed. 
@@ -325,6 +327,10 @@ mydf_base <- mydf  |>
   #the first blank should not have quotes, but the second one should have quotes
   filter(___ == "___") 
 
+
+#computes the effect size using Cohen's d
+#use the "wilcoxon_non.normal_effectSize.r" template to change to Wilcoxon Effect Size if needed
+#can change the var.equal option for equal or unequal variance as needed
 baseline_effectSize_results <- 
   rstatix::cohens_d(
            data = mydf_base,
@@ -464,7 +470,9 @@ formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
 
-#computes the effect size using Cohen's d for Welch test
+#computes the effect size using Cohen's d
+#use the "wilcoxon_non.normal_effectSize.r" template to change to Wilcoxon Effect Size if needed
+#can change the var.equal option for equal or unequal variance as needed
 btw_effectSize_results <- 
   rstatix::cohens_d(
     data = mydf_diff,           #put the dataframe name here
@@ -593,7 +601,9 @@ formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
 
-#computes the effect size using Cohen's d for Welch test
+#computes the effect size using Cohen's d
+#use the "wilcoxon_non.normal_effectSize.r" template to change to Wilcoxon Effect Size if needed
+#can change the var.equal option for equal or unequal variance as needed
 time_effectSize_results <- 
   rstatix::cohens_d(
     data = mydf,           #put the dataframe name here
@@ -705,7 +715,9 @@ formula_string <- paste0(response, " ~ ", predictor)
 formula_object <- as.formula(formula_string)
 
 
-#computes the effect size using Cohen's d for Welch test
+#computes the effect size using Cohen's d
+#use the "wilcoxon_non.normal_effectSize.r" template to change to Wilcoxon Effect Size if needed
+#can change the var.equal option for equal or unequal variance as needed
 trt_effectSize_results <- 
   rstatix::cohens_d(
     data = mydf,           #put the dataframe name here
@@ -777,7 +789,7 @@ You should definitely LOOK at your survey results and you can summarize them man
 
 IF you have time and want to try making some graphs, then look at the "example-two-factor-puzzle.qmd" example and use the code templates in the "graphing" "bar_graphs" script templates.
 
-If you don't have time, you can leave the code chunk below blank and just manually summarize your survey results. (for example, 6 out of 10 subjects regularly drank coffee)
+If you don't have time to make any survey graphs during lab, then you can delete the whole code chunk below and just manually summarize your survey results. (for example, 6 out of 10 subjects regularly drank coffee)
 
 ```{r}
 #| label: survey results

@@ -304,9 +304,13 @@ ggsave(filename = "results/___.png",     # give your graph file a name
 
 ## Survey Results
 
-You can also make graphs that show the results from the survey(s) you had your subjects answer. 
+You should definitely LOOK at your survey results and you can summarize them manually. 
 
-Go to the script_templates folder then select the graphing subfolder followed by the bar_graphs subfolder. You might also want to look at the example analysis to see how survey results can be presented.
+IF you have time, you can also make graphs that show the results from the survey(s) you had your subjects answer. 
+
+Go to the script_templates folder then select the graphing subfolder followed by the bar_graphs subfolder. Use the example analyses to see how survey results can be presented.
+
+If you don't have time to make any survey graphs during lab, then you can delete the whole code chunk below and just manually summarize your survey results. (for example, 6 out of 10 subjects regularly drank coffee)
 
 ```{r}
 #| label: survey results
